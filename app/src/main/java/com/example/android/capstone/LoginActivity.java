@@ -1,21 +1,109 @@
 package com.example.android.capstone;
 
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
+import com.example.android.capstone.Model.User;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 public class LoginActivity extends AppCompatActivity {
+
+    private GoogleSignInClient googleSignInClient;
+    private static final int RC_SIGN_IN = 9001;
+    private static final String USER_KEY = "userkey";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        ButterKnife.bind(this);
+
+        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail().build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);
+
     }
 
-    public void loginButton(View view){
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        updateUIGoogle(account);
+
     }
 
+    private void signIn(){
+        Intent intent = googleSignInClient.getSignInIntent();
+        startActivityForResult(intent, RC_SIGN_IN);
+    }
+
+//    private void signOut(){
+//        googleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+//            @Override
+//            public void onComplete(@NonNull Task<Void> task) {
+//                updateUIGoogle(null);
+//            }
+//        });
+//    }
+//
+//    private void revokeAccess(){
+//        googleSignInClient.revokeAccess().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+//            @Override
+//            public void onComplete(@NonNull Task<Void> task) {
+//                updateUIGoogle(null);
+//            }
+//        });
+//    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN){
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                updateUIGoogle(account);
+            } catch (ApiException e) {
+                Log.e("teste", String.valueOf(e.getStatusCode()));
+            }
+
+        }
+    }
+
+    @OnClick (R.id.btn_signin_google)
+    public void onClick(View view) {
+        signIn();
+    }
+
+    private void updateUIGoogle(GoogleSignInAccount account){
+        if (account == null){
+            Log.d("teste", "No user logged");
+        }else{
+            User user = new User();
+            user.setUsername(account.getGivenName());
+            user.setEmail(account.getEmail());
+            user.setPhotoURL(String.valueOf(account.getPhotoUrl()));
+
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(USER_KEY, user);
+            startActivity(intent);
+        }
+    }
 }

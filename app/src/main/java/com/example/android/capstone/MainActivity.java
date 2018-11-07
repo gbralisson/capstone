@@ -3,6 +3,7 @@ package com.example.android.capstone;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
@@ -16,9 +17,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.example.android.androidlibrary.BudgetFragment;
 import com.example.android.androidlibrary.MaterialFragment;
+import com.example.android.capstone.Model.User;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, ReformFragment.OnFragmentInteractionListener,
@@ -26,11 +32,19 @@ public class MainActivity extends AppCompatActivity
 
     DrawerLayout drawer;
     FragmentManager fragmentManager;
+    private static final String USER_KEY = "userkey";
+    private User user;
+
+    @BindView(R.id.txt_nav_title) TextView nav_title;
+    @BindView(R.id.txt_nav_subtitle) TextView nav_subtitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+//        ButterKnife.bind(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -55,6 +69,17 @@ public class MainActivity extends AppCompatActivity
 
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.frame_content_main, ReformFragment.newInstance("test")).commit();
+
+        if (getIntent() != null){
+            if (getIntent().hasExtra(USER_KEY)){
+                user = getIntent().getParcelableExtra(USER_KEY);
+                Log.d("teste", user.getUsername());
+                Log.d("teste", user.getEmail());
+
+//                nav_title.setText(user.getUsername());
+//                nav_subtitle.setText(user.getEmail());
+            }
+        }
 
     }
 

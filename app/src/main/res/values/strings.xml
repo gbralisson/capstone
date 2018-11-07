@@ -12,7 +12,11 @@
     <string name="nav_material_name">Materials</string>
     <string name="nav_budget_name">Budget</string>
     <string name="nav_tools_name">Tools</string>
-    <string name="nav_group">Communicate</string>
+    <string name="nav_group">Account</string>
     <string name="nav_logout_name">Logout</string>
     <string name="nav_exit_name">Exit</string>
+    
+    <string name="server_client_ID">959951927212-h00d88o7ronspq7aqk6orn3mfffdn5s6.apps.googleusercontent.com</string>
+    <string name="server_oauth_client">959951927212-upsbla6b2i8ghiv9vjmoasakp784loo9.apps.googleusercontent.com</string>
+    
 </resources>

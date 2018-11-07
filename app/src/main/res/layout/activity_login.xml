@@ -4,13 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LoginActivity">
+    tools:context=".LoginActivity"
+    android:orientation="vertical">
+
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/btn_signin_google"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Enter"
-        android:onClick="loginButton"/>
+        android:onClick="loginButton"
+        android:layout_gravity="center"/>
 
 </LinearLayout>
