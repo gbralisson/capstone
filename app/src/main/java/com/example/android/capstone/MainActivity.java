@@ -3,11 +3,9 @@ package com.example.android.capstone;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,11 +15,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.androidlibrary.BudgetFragment;
 import com.example.android.androidlibrary.MaterialFragment;
-import com.example.android.capstone.Model.User;
+import com.example.android.androidlibrary.Model.User;
+import com.example.android.androidlibrary.Utils.Utilities;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -33,17 +37,16 @@ public class MainActivity extends AppCompatActivity
     DrawerLayout drawer;
     FragmentManager fragmentManager;
     private static final String USER_KEY = "userkey";
-    private User user;
+    private static final String USER_SIGN_CLIENT = "userSignInClient";
 
     @BindView(R.id.txt_nav_title) TextView nav_title;
     @BindView(R.id.txt_nav_subtitle) TextView nav_subtitle;
+    @BindView(R.id.img_profile_google) ImageView img_profile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-//        ButterKnife.bind(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -72,12 +75,15 @@ public class MainActivity extends AppCompatActivity
 
         if (getIntent() != null){
             if (getIntent().hasExtra(USER_KEY)){
-                user = getIntent().getParcelableExtra(USER_KEY);
-                Log.d("teste", user.getUsername());
-                Log.d("teste", user.getEmail());
+                GoogleSignInAccount account = getIntent().getParcelableExtra(USER_KEY);
 
-//                nav_title.setText(user.getUsername());
-//                nav_subtitle.setText(user.getEmail());
+                View nav_header = navigationView.getHeaderView(0);
+                ButterKnife.bind(this, nav_header);
+
+                nav_title.setText(account.getGivenName());
+                nav_subtitle.setText(account.getEmail());
+                Utilities.loadImageProfile(this, String.valueOf(account.getPhotoUrl()), img_profile);
+
             }
         }
 
@@ -130,7 +136,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_logout) {
-
+            signOut();
         } else if (id == R.id.nav_exit) {
 
         }
@@ -153,4 +159,22 @@ public class MainActivity extends AppCompatActivity
     public void onBudgetFragmentInteraction(Uri uri) {
 
     }
+
+    private void signOut(){
+        LoginActivity.getGoogleSignInClient().signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                finish();
+            }
+        });
+    }
+//
+//    private void revokeAccess(){
+//        googleSignInClient.revokeAccess().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+//            @Override
+//            public void onComplete(@NonNull Task<Void> task) {
+//                updateUIGoogle(null);
+//            }
+//        });
+//    }
 }

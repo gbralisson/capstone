@@ -1,6 +1,5 @@
-package com.example.android.capstone.Model;
+package com.example.android.androidlibrary.Model;
 
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -66,4 +65,5 @@ public class User implements Parcelable{
         parcel.writeString(email);
         parcel.writeString(photoURL);
     }
+
 }

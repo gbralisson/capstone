@@ -1,13 +1,14 @@
 package com.example.android.capstone;
 
 import android.content.Intent;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.example.android.capstone.Model.User;
+import com.example.android.androidlibrary.Model.User;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -20,9 +21,10 @@ import butterknife.OnClick;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private GoogleSignInClient googleSignInClient;
+    private static GoogleSignInClient googleSignInClient;
     private static final int RC_SIGN_IN = 9001;
     private static final String USER_KEY = "userkey";
+    private static final String USER_SIGN_CLIENT = "userSignInClient";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,24 +53,6 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = googleSignInClient.getSignInIntent();
         startActivityForResult(intent, RC_SIGN_IN);
     }
-
-//    private void signOut(){
-//        googleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                updateUIGoogle(null);
-//            }
-//        });
-//    }
-//
-//    private void revokeAccess(){
-//        googleSignInClient.revokeAccess().addOnCompleteListener(this, new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                updateUIGoogle(null);
-//            }
-//        });
-//    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -102,8 +86,12 @@ public class LoginActivity extends AppCompatActivity {
             user.setPhotoURL(String.valueOf(account.getPhotoUrl()));
 
             Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra(USER_KEY, user);
+            intent.putExtra(USER_KEY, account);
             startActivity(intent);
         }
+    }
+
+    public static GoogleSignInClient getGoogleSignInClient() {
+        return googleSignInClient;
     }
 }
