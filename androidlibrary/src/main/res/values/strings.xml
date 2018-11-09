@@ -4,4 +4,6 @@
     <string name="hello_Material_fragment">Hello Material blank fragment</string>
     <string name="hello_Budget_fragment">Hello Budget blank fragment</string>
 
+    <string name="no_reforms">No reform registered</string>
+
 </resources>

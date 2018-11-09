@@ -1,27 +1,46 @@
 package com.example.android.capstone;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-public class ReformFragment extends Fragment {
+import com.example.android.androidlibrary.Model.Reform;
+import com.example.android.androidlibrary.ViewModel.ReformViewModel;
+import com.example.android.capstone.Adapter.ReformAdapter;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class ReformFragment extends Fragment implements ReformAdapter.ReformAdapterOnClickHandler{
 
     private static final String ARG_PARAM1 = "param1";
 
     private String mParam1;
+    private Context context;
     private OnFragmentInteractionListener mListener;
+    private ReformAdapter reformAdapter;
+    private RecyclerView.LayoutManager linearLayoutManager;
+
+    RecyclerView recyclerView;
 
     public ReformFragment() {
     }
 
-    public static ReformFragment newInstance(String param1) {
+    public static ReformFragment newInstance() {
         ReformFragment fragment = new ReformFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
         fragment.setArguments(args);
         return fragment;
     }
@@ -30,17 +49,28 @@ public class ReformFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_reform, container, false);
+        View view =  inflater.inflate(R.layout.fragment_reform, container, false);
+
+        recyclerView = view.findViewById(R.id.rv_reforms_list);
+
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        reformAdapter = new ReformAdapter(this);
+
+        recyclerView.setAdapter(reformAdapter);
+        recyclerView.setHasFixedSize(true);
+
+        setupViewModelReform();
+
+        return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onReformFragmentInteraction(uri);
@@ -64,17 +94,31 @@ public class ReformFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    @Override
+    public void onClick(Reform reform) {
+
+    }
+
     public interface OnFragmentInteractionListener {
         void onReformFragmentInteraction(Uri uri);
     }
+
+    public void setupViewModelReform(){
+        ReformViewModel reformViewModel = ViewModelProviders.of(this).get(ReformViewModel.class);
+        reformViewModel.getReforms().observe(this, new Observer<Reform[]>() {
+            @Override
+            public void onChanged(@Nullable Reform[] reforms) {
+                if (reforms.length == 0){
+                    Log.d("teste", "no reforms");
+                } else {
+                    reformAdapter.setReforms(reforms);
+                }
+            }
+        });
+    }
+
+    public void setLayoutManager(RecyclerView.LayoutManager layoutManager){
+        this.linearLayoutManager = layoutManager;
+    }
+
 }

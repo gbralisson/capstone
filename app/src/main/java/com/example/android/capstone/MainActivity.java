@@ -1,11 +1,15 @@
 package com.example.android.capstone;
 
+import android.arch.lifecycle.ViewModel;
+import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.ViewModelProviders;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -22,6 +26,7 @@ import com.example.android.androidlibrary.BudgetFragment;
 import com.example.android.androidlibrary.MaterialFragment;
 import com.example.android.androidlibrary.Model.User;
 import com.example.android.androidlibrary.Utils.Utilities;
+import com.example.android.androidlibrary.ViewModel.ReformViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -36,6 +41,7 @@ public class MainActivity extends AppCompatActivity
 
     DrawerLayout drawer;
     FragmentManager fragmentManager;
+    private ReformFragment reformFragment;
     private static final String USER_KEY = "userkey";
     private static final String USER_SIGN_CLIENT = "userSignInClient";
 
@@ -71,7 +77,9 @@ public class MainActivity extends AppCompatActivity
         navigationView.getMenu().getItem(0).setChecked(true);
 
         fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.frame_content_main, ReformFragment.newInstance("test")).commit();
+
+        reformFragment = ReformFragment.newInstance();
+        fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
 
         if (getIntent() != null){
             if (getIntent().hasExtra(USER_KEY)){
@@ -101,19 +109,14 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -124,11 +127,13 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.nav_reforms) {
-            fragmentManager.beginTransaction().replace(R.id.frame_content_main, ReformFragment.newInstance("test")).commit();
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+            reformFragment.setLayoutManager(linearLayoutManager);
+
+            fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
         } else if (id == R.id.nav_materials) {
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, MaterialFragment.newInstance("test")).commit();
         } else if (id == R.id.nav_budget) {
@@ -177,4 +182,5 @@ public class MainActivity extends AppCompatActivity
 //            }
 //        });
 //    }
+
 }
