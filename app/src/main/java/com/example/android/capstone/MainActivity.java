@@ -13,6 +13,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -57,9 +58,11 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.txt_nav_subtitle) TextView nav_subtitle;
     @BindView(R.id.img_profile_google) ImageView img_profile;
 
-    FloatingActionButton fab_reform;
-    FloatingActionButton fab_material;
-    FloatingActionButton fab_budget;
+    private FloatingActionButton fab_reform;
+    private FloatingActionButton fab_material;
+    private FloatingActionButton fab_budget;
+
+    private LinearLayoutManager linearLayoutManager;
 
     Boolean isFabOpen = false;
 
@@ -96,7 +99,7 @@ public class MainActivity extends AppCompatActivity
         fab_reform.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+                final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
 
                 LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
                 View viewDialog = layoutInflater.inflate(R.layout.dialog_reform, null);
@@ -122,7 +125,7 @@ public class MainActivity extends AppCompatActivity
                 dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        finish();
+                        onBackPressed();
                     }
                 }).create();
                 dialog.show();
@@ -140,8 +143,11 @@ public class MainActivity extends AppCompatActivity
         navigationView.getMenu().getItem(0).setChecked(true);
 
         fragmentManager = getSupportFragmentManager();
-
         reformFragment = ReformFragment.newInstance();
+
+        linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        reformFragment.setLayoutManager(linearLayoutManager);
+
         fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
 
         if (getIntent() != null){
@@ -158,6 +164,13 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        Log.d("Teste", "onResume");
     }
 
     @Override
@@ -193,12 +206,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_reforms) {
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
             reformFragment.setLayoutManager(linearLayoutManager);
-
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
         } else if (id == R.id.nav_materials) {
-            fragmentManager.beginTransaction().replace(R.id.frame_content_main, MaterialFragment.newInstance("test")).commit();
+            MaterialFragment materialFragment = MaterialFragment.newInstance("");
+            materialFragment.setLinearLayoutManager(linearLayoutManager);
+            fragmentManager.beginTransaction().replace(R.id.frame_content_main, materialFragment).commit();
         } else if (id == R.id.nav_budget) {
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, BudgetFragment.newInstance("test")).commit();
         } else if (id == R.id.nav_manage) {
@@ -261,6 +274,7 @@ public class MainActivity extends AppCompatActivity
         protected Void doInBackground(Reform... reforms) {
             Reform reform = reforms[0];
             database.reformDAO().insertReform(reform);
+//            Log.d("teste", reform.getRoom());
             return null;
         }
 

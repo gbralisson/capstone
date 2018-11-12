@@ -3,6 +3,7 @@ package com.example.android.capstone.Adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,13 +53,20 @@ public class ReformAdapter extends RecyclerView.Adapter<ReformAdapter.ReformAdap
 
     public class ReformAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-        @BindView(R.id.txt_room) TextView room;
-        @BindView(R.id.txt_days) TextView days;
-        @BindView(R.id.txt_spent) TextView spent;
+//        @BindView(R.id.txt_room) TextView room;
+//        @BindView(R.id.txt_days) TextView days;
+//        @BindView(R.id.txt_spent) TextView spent;
+
+        TextView room;
+        TextView days;
+        TextView spent;
 
         public ReformAdapterViewHolder(@NonNull View itemView) {
             super(itemView);
-            ButterKnife.bind(itemView);
+//            ButterKnife.bind(itemView);
+            room = itemView.findViewById(R.id.txt_room);
+            days = itemView.findViewById(R.id.txt_days);
+            spent = itemView.findViewById(R.id.txt_spent);
             itemView.setOnClickListener(this);
 
         }
@@ -73,6 +81,9 @@ public class ReformAdapter extends RecyclerView.Adapter<ReformAdapter.ReformAdap
 
     public void setReforms(Reform[] reforms){
         this.reforms = reforms;
+        Log.d("teste", reforms[0].getRoom());
+        Log.d("teste", reforms[0].getDays());
+        notifyDataSetChanged();
     }
 
 }

@@ -58,11 +58,9 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
         View view =  inflater.inflate(R.layout.fragment_reform, container, false);
 
         recyclerView = view.findViewById(R.id.rv_reforms_list);
-
         recyclerView.setLayoutManager(linearLayoutManager);
 
         reformAdapter = new ReformAdapter(this);
-
         recyclerView.setAdapter(reformAdapter);
         recyclerView.setHasFixedSize(true);
 
