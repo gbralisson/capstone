@@ -16,7 +16,7 @@ public class MaterialViewModel extends AndroidViewModel{
         super(application);
 
         MaterialDatabase materialDatabase = MaterialDatabase.getsInstance(this.getApplication());
-        materialDatabase.materialDAO().loadAllmaterials();
+        materials = materialDatabase.materialDAO().loadAllmaterials();
     }
 
     public LiveData<Material[]> getMaterials(){

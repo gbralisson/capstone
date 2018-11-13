@@ -81,8 +81,6 @@ public class ReformAdapter extends RecyclerView.Adapter<ReformAdapter.ReformAdap
 
     public void setReforms(Reform[] reforms){
         this.reforms = reforms;
-        Log.d("teste", reforms[0].getRoom());
-        Log.d("teste", reforms[0].getDays());
         notifyDataSetChanged();
     }
 

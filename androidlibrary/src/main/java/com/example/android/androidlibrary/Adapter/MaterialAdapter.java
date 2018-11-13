@@ -3,6 +3,7 @@ package com.example.android.androidlibrary.Adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +29,7 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.Materi
     @Override
     public MaterialAdapterViewModel onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         Context context = viewGroup.getContext();
-        View view = LayoutInflater.from(context).inflate(R.layout.material_item, null);
+        View view = LayoutInflater.from(context).inflate(R.layout.material_item, viewGroup, false);
         return new MaterialAdapterViewModel(view);
     }
 
@@ -57,6 +58,7 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.Materi
             txt_material = itemView.findViewById(R.id.txt_material);
             txt_unit = itemView.findViewById(R.id.txt_unit);
             txt_value = itemView.findViewById(R.id.txt_value);
+            itemView.setOnClickListener(this);
         }
 
         @Override
@@ -69,6 +71,7 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.Materi
 
     public void setMaterials(Material[] materials){
         this.materials = materials;
+        notifyDataSetChanged();
     }
 
 }

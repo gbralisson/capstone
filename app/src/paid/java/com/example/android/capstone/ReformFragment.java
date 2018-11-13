@@ -4,6 +4,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -25,6 +26,7 @@ import butterknife.ButterKnife;
 
 public class ReformFragment extends Fragment implements ReformAdapter.ReformAdapterOnClickHandler{
 
+    private static final String TAG = "reform_key";
     private static final String ARG_PARAM1 = "param1";
 
     private String mParam1;
@@ -94,7 +96,9 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
 
     @Override
     public void onClick(Reform reform) {
-
+        Intent intent = new Intent(getActivity(), ReformDetailActivity.class);
+        intent.putExtra(TAG, reform);
+        startActivity(intent);
     }
 
     public interface OnFragmentInteractionListener {

@@ -1,12 +1,26 @@
 package com.example.android.androidlibrary.Model;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+
+@Entity(tableName = "material")
 public class Material {
 
+    @PrimaryKey(autoGenerate = true)
+    private int id;
     private String material;
     private String unit;
     private String value;
 
     public Material(){}
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getMaterial() {
         return material;
