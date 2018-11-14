@@ -15,7 +15,6 @@ public class Reform implements Parcelable{
     private String room;
     private String days;
     private String total_spent;
-//    private List<Material> materials;
 
     public Reform(){}
 
@@ -82,11 +81,4 @@ public class Reform implements Parcelable{
         parcel.writeString(total_spent);
     }
 
-//    public List<Material> getMaterials() {
-//        return materials;
-//    }
-//
-//    public void setMaterials(List<Material> materials) {
-//        this.materials = materials;
-//    }
 }

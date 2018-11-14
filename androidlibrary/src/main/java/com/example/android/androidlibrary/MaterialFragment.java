@@ -101,10 +101,10 @@ public class MaterialFragment extends Fragment implements MaterialAdapter.Materi
         materialViewModel.getMaterials().observe(this, new Observer<Material[]>() {
             @Override
             public void onChanged(@Nullable Material[] materials) {
-                if (materials.length == 0)
-                    Log.d("teste", "No material");
-                else
-                    materialAdapter.setMaterials(materials);
+            if (materials.length == 0)
+                Log.d("teste", "No material");
+            else
+                materialAdapter.setMaterials(materials);
             }
         });
     }
