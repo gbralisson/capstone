@@ -17,7 +17,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.android.androidlibrary.Model.Material;
 import com.example.android.androidlibrary.Model.Reform;
+import com.example.android.androidlibrary.ViewModel.MaterialViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformViewModel;
 import com.example.android.capstone.Adapter.ReformAdapter;
 
@@ -35,7 +37,8 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
     private ReformAdapter reformAdapter;
     private RecyclerView.LayoutManager linearLayoutManager;
 
-    RecyclerView recyclerView;
+    private RecyclerView recyclerView;
+    private Material[] materials;
 
     public ReformFragment() {
     }
@@ -123,4 +126,7 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
         this.linearLayoutManager = layoutManager;
     }
 
+    public void setMaterials(Material[] materials){
+        this.materials = materials;
+    }
 }

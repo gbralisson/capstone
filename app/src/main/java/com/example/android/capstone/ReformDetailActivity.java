@@ -16,9 +16,11 @@ import android.widget.TextView;
 import com.example.android.androidlibrary.Adapter.DailyAdapter;
 import com.example.android.androidlibrary.Database.DailyDatabase;
 import com.example.android.androidlibrary.Model.Daily;
+import com.example.android.androidlibrary.Model.Material;
 import com.example.android.androidlibrary.Model.Reform;
 import com.example.android.androidlibrary.ViewModel.DailyFactoryViewModel;
 import com.example.android.androidlibrary.ViewModel.GetDailyViewModel;
+import com.example.android.androidlibrary.ViewModel.MaterialViewModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -33,6 +35,8 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
 
     private DailyDatabase dailyDatabase;
     private DailyAdapter dailyAdapter;
+
+    private Material[] materials;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +62,7 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
                 rv_daily.setAdapter(dailyAdapter);
 
                 setupViewModel(reform);
+                setupMaterialViewModel();
 
             }
         }
@@ -65,7 +70,7 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
         fab_daily.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Log.d("teste", materials[0].getMaterial());
             }
         });
 
@@ -83,9 +88,29 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
         getDailyViewModel.getDailies().observe(this, new Observer<Daily[]>() {
             @Override
             public void onChanged(@Nullable Daily[] dailies) {
-                if (dailies != null)
+                if (dailies.length != 0) {
                     dailyAdapter.setDailies(dailies);
+                }
+                else
+                    Log.d("teste", "no daily");
             }
         });
+    }
+
+    public void setupMaterialViewModel(){
+        MaterialViewModel materialViewModel = ViewModelProviders.of(this).get(MaterialViewModel.class);
+        materialViewModel.getMaterials().observe(this, new Observer<Material[]>() {
+            @Override
+            public void onChanged(@Nullable Material[] materials) {
+                if (materials.length == 0)
+                    Log.d("teste", "No material");
+                else
+                    setMaterials(materials);
+            }
+        });
+    }
+
+    public void setMaterials(Material[] materials){
+        this.materials = materials;
     }
 }
