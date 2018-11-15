@@ -68,6 +68,7 @@ public class DailyAdapter extends RecyclerView.Adapter<DailyAdapter.DailyAdapter
 
     public void setDailies(Daily[] dailies){
         this.dailies = dailies;
+        notifyDataSetChanged();
     }
 
 }

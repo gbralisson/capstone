@@ -2,16 +2,24 @@ package com.example.android.capstone;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.androidlibrary.Adapter.DailyAdapter;
 import com.example.android.androidlibrary.Database.DailyDatabase;
@@ -21,6 +29,9 @@ import com.example.android.androidlibrary.Model.Reform;
 import com.example.android.androidlibrary.ViewModel.DailyFactoryViewModel;
 import com.example.android.androidlibrary.ViewModel.GetDailyViewModel;
 import com.example.android.androidlibrary.ViewModel.MaterialViewModel;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,6 +46,7 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
 
     private DailyDatabase dailyDatabase;
     private DailyAdapter dailyAdapter;
+    private Reform reform;
 
     private Material[] materials;
 
@@ -47,7 +59,7 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
 
         if (getIntent() != null){
             if (getIntent().hasExtra(TAG)){
-                Reform reform = getIntent().getParcelableExtra(TAG);
+                reform = getIntent().getParcelableExtra(TAG);
 
                 dailyDatabase = DailyDatabase.getsInstance(this);
 
@@ -61,7 +73,7 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
                 dailyAdapter = new DailyAdapter(this);
                 rv_daily.setAdapter(dailyAdapter);
 
-                setupViewModel(reform);
+//                setupViewModel();
                 setupMaterialViewModel();
 
             }
@@ -70,7 +82,40 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
         fab_daily.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("teste", materials[0].getMaterial());
+                final AlertDialog.Builder dialog = new AlertDialog.Builder(ReformDetailActivity.this);
+
+                LayoutInflater layoutInflater = ReformDetailActivity.this.getLayoutInflater();
+                View viewDialog = layoutInflater.inflate(R.layout.dialog_daily, null);
+
+                dialog.setView(viewDialog);
+                dialog.setTitle(getString(R.string.daily_register));
+
+                final Spinner spnMaterial = viewDialog.findViewById(R.id.spn_material);
+                final EditText edtQuantity = viewDialog.findViewById(R.id.edt_quantity);
+
+                ArrayList<Material> listMaterial = setSpinnerList(materials);
+
+                final ArrayAdapter<Material> adapter = new ArrayAdapter<>(ReformDetailActivity.this, android.R.layout.simple_spinner_dropdown_item, listMaterial);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnMaterial.setAdapter(adapter);
+
+                dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Material material = (Material) spnMaterial.getSelectedItem();
+//                        Log.d("teste", material.getMaterial());
+                        Daily daily = getDaily(material);
+                        insertDailyDatabase(daily);
+                    }
+                });
+
+                dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                }).create();
+                dialog.show();
             }
         });
 
@@ -81,7 +126,7 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
 
     }
 
-    public void setupViewModel(Reform reform){
+    public void setupViewModel(){
         DailyFactoryViewModel dailyFactoryViewModel = new DailyFactoryViewModel(dailyDatabase, reform.getId());
         GetDailyViewModel getDailyViewModel = ViewModelProviders.of(this, dailyFactoryViewModel).get(GetDailyViewModel.class);
 
@@ -113,4 +158,41 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
     public void setMaterials(Material[] materials){
         this.materials = materials;
     }
+
+    public ArrayList<Material> setSpinnerList(Material[] materials){
+        ArrayList<Material> listMaterial = new ArrayList<>();
+        Collections.addAll(listMaterial, materials);
+        return listMaterial;
+    }
+
+    public Daily getDaily(Material material){
+        Daily daily = new Daily();
+//        daily.setId_reform(reform.getId());
+        daily.setMaterial(material.getMaterial());
+        daily.setUnit(material.getUnit());
+        daily.setValue(material.getValue());
+        return daily;
+    }
+
+    public void insertDailyDatabase(Daily daily){
+        new InsertDailyDB().execute(daily);
+    }
+
+    public class InsertDailyDB extends AsyncTask<Daily, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Daily... dailies) {
+//            Log.d("teste", String.valueOf(dailies.length));
+            Daily daily = dailies[0];
+//            Log.d("teste", daily.getMaterial());
+            dailyDatabase.dailyDAO().insertDaily(daily);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Toast.makeText(ReformDetailActivity.this, "Daily has been added", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

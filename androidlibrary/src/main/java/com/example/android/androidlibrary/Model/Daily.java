@@ -1,17 +1,21 @@
 package com.example.android.androidlibrary.Model;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.PrimaryKey;
 
 import static android.arch.persistence.room.ForeignKey.CASCADE;
 
-@Entity(tableName = "daily", foreignKeys = @ForeignKey(entity = Reform.class, parentColumns = "id", childColumns = "id_reform",
+@Entity(foreignKeys = @ForeignKey(entity = Reform.class, parentColumns = "id", childColumns = "id_reform",
                 onDelete = CASCADE))
 public class Daily {
 
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
+    @ColumnInfo(name = "id")
     private int id;
+
+    @ColumnInfo(name = "id_reform")
     private int id_reform;
     private String material;
     private String unit;

@@ -1,5 +1,6 @@
 package com.example.android.androidlibrary.Model;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
@@ -11,6 +12,7 @@ import java.util.List;
 public class Reform implements Parcelable{
 
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
     private int id;
     private String room;
     private String days;

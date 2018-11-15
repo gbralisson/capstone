@@ -1,9 +1,13 @@
 <resources>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_Material_fragment">Hello Material blank fragment</string>
     <string name="hello_Budget_fragment">Hello Budget blank fragment</string>
 
     <string name="no_reforms">No reform registered</string>
+
+    <string name="reform_register">Reform Register</string>
+    <string name="daily_register">Daily Register</string>
+    <string name="btn_register">Register</string>
+    <string name="btn_cancel">Cancel</string>
 
 </resources>

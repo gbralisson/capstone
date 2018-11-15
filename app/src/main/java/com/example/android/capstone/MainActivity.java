@@ -121,13 +121,13 @@ public class MainActivity extends AppCompatActivity
                 View viewDialog = layoutInflater.inflate(R.layout.dialog_reform, null);
 
                 dialog.setView(viewDialog);
-                dialog.setTitle("Reform register");
+                dialog.setTitle(getString(R.string.reform_register));
 
                 final EditText room = viewDialog.findViewById(R.id.edt_dialog_room);
                 final EditText days = viewDialog.findViewById(R.id.edt_dialog_days);
                 final EditText spent = viewDialog.findViewById(R.id.edt_dialog_spent);
 
-                dialog.setPositiveButton("Register", new DialogInterface.OnClickListener() {
+                dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Reform reform = new Reform();
@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
 
-                dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         onBackPressed();

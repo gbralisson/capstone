@@ -8,7 +8,7 @@ import android.content.Context;
 import com.example.android.androidlibrary.Model.Daily;
 import com.example.android.androidlibrary.Model.Reform;
 
-@Database(entities = {Daily.class, Reform.class}, version = 1, exportSchema = false)
+@Database(entities = {Daily.class}, version = 1)
 public abstract class DailyDatabase extends RoomDatabase{
 
     private static final Object LOCK = new Object();

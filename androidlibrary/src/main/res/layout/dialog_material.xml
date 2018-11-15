@@ -8,16 +8,18 @@
     <EditText
         android:id="@+id/edt_material"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:hint="Material"/>
 
     <Spinner
         android:id="@+id/spn_unit"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content" />
 
     <EditText
         android:id="@+id/edt_value"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:hint="Value"/>
 
 </LinearLayout>
