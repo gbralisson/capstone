@@ -1,17 +1,15 @@
 package com.example.android.capstone;
 
-import android.arch.lifecycle.ViewModel;
-import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
@@ -25,7 +23,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -35,19 +32,23 @@ import android.widget.Toast;
 
 import com.example.android.androidlibrary.BudgetFragment;
 import com.example.android.androidlibrary.Database.AppDatabase;
-import com.example.android.androidlibrary.Database.MaterialDatabase;
 import com.example.android.androidlibrary.MaterialFragment;
+import com.example.android.androidlibrary.Model.Daily;
 import com.example.android.androidlibrary.Model.Material;
 import com.example.android.androidlibrary.Model.Reform;
-import com.example.android.androidlibrary.Model.User;
+import com.example.android.androidlibrary.Model.ReformAllDailies;
 import com.example.android.androidlibrary.Utils.Utilities;
+import com.example.android.androidlibrary.ViewModel.GetReformViewModel;
+import com.example.android.androidlibrary.ViewModel.MaterialViewModel;
+import com.example.android.androidlibrary.ViewModel.ReformFactoryViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.sql.Ref;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -75,9 +76,10 @@ public class MainActivity extends AppCompatActivity
 
     Boolean isFabOpen = false;
 
-    AppDatabase ReformDatabase;
-    MaterialDatabase materialDatabase;
+    AppDatabase appDatabase;
     private List<String> units = new ArrayList<>();
+    private Material[] materials;
+    private Reform[] reforms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,8 +92,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        ReformDatabase = AppDatabase.getsInstance(this);
-        materialDatabase = MaterialDatabase.getsInstance(this);
+        appDatabase = AppDatabase.getsInstance(this);
 
         fab_reform = findViewById(R.id.fab_reform);
         fab_material = findViewById(R.id.fab_material);
@@ -99,6 +100,8 @@ public class MainActivity extends AppCompatActivity
 
         openFab();
         fillSpinner();
+        setupReformViewModel();
+        setupMaterialViewModel();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -182,6 +185,52 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         onBackPressed();
+                    }
+                }).create();
+                dialog.show();
+            }
+        });
+
+        fab_budget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+
+                LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
+                View viewDialog = layoutInflater.inflate(R.layout.dialog_daily, null);
+
+                dialog.setView(viewDialog);
+                dialog.setTitle(getString(R.string.daily_register));
+
+                final Spinner spnMaterial = viewDialog.findViewById(R.id.spn_material);
+                final EditText edtQuantity = viewDialog.findViewById(R.id.edt_quantity);
+                final Spinner spnReform = viewDialog.findViewById(R.id.spn_reform);
+
+                ArrayList<Material> listMaterial = setSpinnerListMaterial(materials);
+                ArrayList<Reform> listReforms = setSpinnerListReforms(reforms);
+
+                final ArrayAdapter<Material> adapterMaterial = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listMaterial);
+                adapterMaterial.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnMaterial.setAdapter(adapterMaterial);
+
+                final ArrayAdapter<Reform> adapterReform = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listReforms);
+                adapterReform.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnReform.setAdapter(adapterReform);
+
+                dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Material material = (Material) spnMaterial.getSelectedItem();
+                        Reform reform = (Reform) spnReform.getSelectedItem();
+                        Daily daily = getDaily(material, reform, Integer.parseInt(edtQuantity.getText().toString()));
+                        insertDailyDatabase(daily);
+                    }
+                });
+
+                dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
                     }
                 }).create();
                 dialog.show();
@@ -324,7 +373,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Reform... reforms) {
             Reform reform = reforms[0];
-            ReformDatabase.reformDAO().insertReform(reform);
+            appDatabase.reformDAO().insertReform(reform);
             return null;
         }
 
@@ -343,7 +392,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Material... materials) {
             Material material = materials[0];
-            materialDatabase.materialDAO().insertMaterial(material);
+            appDatabase.materialDAO().insertMaterial(material);
             return null;
         }
 
@@ -353,10 +402,84 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void insertDailyDatabase(Daily daily){
+        new InsertDailyDB().execute(daily);
+    }
+
+    public class InsertDailyDB extends AsyncTask<Daily, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Daily... dailies) {
+            Daily daily = dailies[0];
+            appDatabase.dailyDAO().insertDaily(daily);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Toast.makeText(getApplicationContext(), "Daily has been added", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void fillSpinner(){
         units.add("Kg");
         units.add("g");
         units.add("mg");
+    }
+
+    public void setupMaterialViewModel(){
+        MaterialViewModel materialViewModel = ViewModelProviders.of(this).get(MaterialViewModel.class);
+        materialViewModel.getMaterials().observe(this, new Observer<Material[]>() {
+            @Override
+            public void onChanged(@Nullable Material[] materials) {
+                if (materials.length == 0)
+                    Log.d("teste", "No material");
+                else
+                    setMaterials(materials);
+            }
+        });
+    }
+
+    public void setupReformViewModel(){
+        ReformViewModel reformViewModel = ViewModelProviders.of(this).get(ReformViewModel.class);
+        reformViewModel.getReforms().observe(this, new Observer<Reform[]>() {
+            @Override
+            public void onChanged(@Nullable Reform[] reforms) {
+                if (reforms.length == 0){
+                    Log.d("teste", "No reform");
+                } else {
+                    setReforms(reforms);
+                }
+            }
+        });
+    }
+
+    public ArrayList<Material> setSpinnerListMaterial(Material[] materials){
+        ArrayList<Material> listMaterial = new ArrayList<>();
+        Collections.addAll(listMaterial, materials);
+        return listMaterial;
+    }
+
+    public ArrayList<Reform> setSpinnerListReforms(Reform[] reforms){
+        ArrayList<Reform> listReforms = new ArrayList<>();
+        Collections.addAll(listReforms, reforms);
+        return listReforms;
+    }
+
+    public void setMaterials(Material[] materials){
+        this.materials = materials;
+    }
+
+    public void setReforms(Reform[] reforms){
+        this.reforms = reforms;
+    }
+
+    public Daily getDaily(Material material, Reform reform, int quantity){
+        Daily daily = new Daily();
+        daily.setId_reform(reform.getId());
+        daily.setMaterial(material);
+        daily.setQuantity(quantity);
+        return daily;
     }
 //
 //    private void revokeAccess(){

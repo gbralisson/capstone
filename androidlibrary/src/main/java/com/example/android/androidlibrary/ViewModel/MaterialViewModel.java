@@ -5,7 +5,7 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.support.annotation.NonNull;
 
-import com.example.android.androidlibrary.Database.MaterialDatabase;
+import com.example.android.androidlibrary.Database.AppDatabase;
 import com.example.android.androidlibrary.Model.Material;
 
 public class MaterialViewModel extends AndroidViewModel{
@@ -15,8 +15,8 @@ public class MaterialViewModel extends AndroidViewModel{
     public MaterialViewModel(@NonNull Application application) {
         super(application);
 
-        MaterialDatabase materialDatabase = MaterialDatabase.getsInstance(this.getApplication());
-        materials = materialDatabase.materialDAO().loadAllmaterials();
+        AppDatabase database = AppDatabase.getsInstance(this.getApplication());
+        materials = database.materialDAO().loadAllmaterials();
     }
 
     public LiveData<Material[]> getMaterials(){

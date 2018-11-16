@@ -11,10 +11,12 @@ import android.widget.TextView;
 import com.example.android.androidlibrary.Model.Daily;
 import com.example.android.androidlibrary.R;
 
+import java.util.List;
+
 public class DailyAdapter extends RecyclerView.Adapter<DailyAdapter.DailyAdapterViewHolder>{
 
     private DailyAdapterOnClickListener dailyAdapterOnClickListener;
-    private Daily[] dailies;
+    private List<Daily> dailies;
 
     public DailyAdapter(DailyAdapterOnClickListener dailyAdapterOnClickListener){
         this.dailyAdapterOnClickListener = dailyAdapterOnClickListener;
@@ -34,14 +36,16 @@ public class DailyAdapter extends RecyclerView.Adapter<DailyAdapter.DailyAdapter
 
     @Override
     public void onBindViewHolder(@NonNull DailyAdapterViewHolder dailyAdapterViewHolder, int i) {
-        dailyAdapterViewHolder.txt_daily_material.setText(dailies[i].getMaterial());
-        dailyAdapterViewHolder.txt_daily_unit.setText(dailies[i].getUnit());
-        dailyAdapterViewHolder.txt_daily_value.setText(dailies[i].getValue());
+        dailyAdapterViewHolder.txt_daily_material.setText(dailies.get(i).getMaterial().getMaterial());
+        dailyAdapterViewHolder.txt_daily_unit.setText(dailies.get(i).getMaterial().getUnit());
+        dailyAdapterViewHolder.txt_daily_value.setText(dailies.get(i).getMaterial().getValue());
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        if (dailies == null)
+            return 0;
+        return dailies.size();
     }
 
     public class DailyAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -61,12 +65,12 @@ public class DailyAdapter extends RecyclerView.Adapter<DailyAdapter.DailyAdapter
         @Override
         public void onClick(View view) {
             int id = getAdapterPosition();
-            Daily daily = dailies[id];
+            Daily daily = dailies.get(id);
             dailyAdapterOnClickListener.onClick(daily);
         }
     }
 
-    public void setDailies(Daily[] dailies){
+    public void setDailies(List<Daily> dailies){
         this.dailies = dailies;
         notifyDataSetChanged();
     }

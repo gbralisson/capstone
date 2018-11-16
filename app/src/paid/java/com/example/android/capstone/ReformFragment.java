@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,10 +17,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.android.androidlibrary.Database.AppDatabase;
+import com.example.android.androidlibrary.Model.Daily;
 import com.example.android.androidlibrary.Model.Material;
 import com.example.android.androidlibrary.Model.Reform;
+import com.example.android.androidlibrary.Model.ReformAllDailies;
+import com.example.android.androidlibrary.ViewModel.GetReformViewModel;
 import com.example.android.androidlibrary.ViewModel.MaterialViewModel;
+import com.example.android.androidlibrary.ViewModel.ReformFactoryViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformViewModel;
 import com.example.android.capstone.Adapter.ReformAdapter;
 
@@ -38,7 +45,7 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
     private RecyclerView.LayoutManager linearLayoutManager;
 
     private RecyclerView recyclerView;
-    private Material[] materials;
+    private Reform[] reforms;
 
     public ReformFragment() {
     }
@@ -54,6 +61,8 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
+            reforms = (Reform[]) getArguments().getParcelableArray(TAG);
+//            Log.d("teste", String.valueOf(reforms.length));
         }
     }
 
@@ -99,6 +108,9 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
 
     @Override
     public void onClick(Reform reform) {
+
+//        setupDailiesViewModel(reform.getId());
+
         Intent intent = new Intent(getActivity(), ReformDetailActivity.class);
         intent.putExtra(TAG, reform);
         startActivity(intent);
@@ -120,13 +132,28 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
                 }
             }
         });
+
+    }
+
+    public void setupDailiesViewModel(int id){
+        ReformFactoryViewModel reformFactoryViewModel = new ReformFactoryViewModel(AppDatabase.getsInstance(getActivity()), id);
+        GetReformViewModel getReformViewModel = ViewModelProviders.of(this, reformFactoryViewModel).get(GetReformViewModel.class);
+
+        getReformViewModel.getReformAllDailiesLiveData().observe(this, new Observer<ReformAllDailies>() {
+            @Override
+            public void onChanged(@Nullable ReformAllDailies reformAllDailies) {
+                if (reformAllDailies != null){
+                    Log.d("teste", "Room: " + reformAllDailies.getReform().getRoom());
+                    Log.d("teste", "Size: " + String.valueOf(reformAllDailies.getDailies().size()));
+//                    dailyAdapter.setDailies(reformAllDailies.getDailies());
+                } else{
+                    Log.d("teste", "No daily");
+                }
+            }
+        });
     }
 
     public void setLayoutManager(RecyclerView.LayoutManager layoutManager){
         this.linearLayoutManager = layoutManager;
-    }
-
-    public void setMaterials(Material[] materials){
-        this.materials = materials;
     }
 }

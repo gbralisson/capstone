@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 
 import com.example.android.androidlibrary.Database.AppDatabase;
 import com.example.android.androidlibrary.Model.Reform;
+import com.example.android.androidlibrary.Model.ReformAllDailies;
 
 public class ReformViewModel extends AndroidViewModel{
 
