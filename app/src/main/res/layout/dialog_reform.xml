@@ -15,12 +15,14 @@
         android:id="@+id/edt_dialog_days"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:inputType="number"
         android:hint="Days"/>
 
     <EditText
         android:id="@+id/edt_dialog_spent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
         android:hint="Spent"/>
 
 </LinearLayout>

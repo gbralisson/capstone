@@ -9,5 +9,9 @@
     <string name="daily_register">Daily Register</string>
     <string name="btn_register">Register</string>
     <string name="btn_cancel">Cancel</string>
+    
+    <string name="budget_spent">Spent</string>
+    <string name="budget_budget">Budget</string>
+    <string name="budget_remaining">Remaining</string>
 
 </resources>

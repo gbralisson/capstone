@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity
 
     private FloatingActionButton fab_reform;
     private FloatingActionButton fab_material;
-    private FloatingActionButton fab_budget;
+    private FloatingActionButton fab_daily;
 
     private LinearLayoutManager linearLayoutManager;
 
@@ -86,9 +86,6 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        ActionBar actionBar = getSupportActionBar();
-//        actionBar.setTitle(getResources().getString(R.string.txt_AGDaily));
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -96,7 +93,7 @@ public class MainActivity extends AppCompatActivity
 
         fab_reform = findViewById(R.id.fab_reform);
         fab_material = findViewById(R.id.fab_material);
-        fab_budget = findViewById(R.id.fab_budget);
+        fab_daily = findViewById(R.id.fab_daily);
 
         openFab();
         fillSpinner();
@@ -114,6 +111,32 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.getMenu().getItem(0).setChecked(true);
+
+        fragmentManager = getSupportFragmentManager();
+
+        if (getIntent() != null){
+            if (getIntent().hasExtra(USER_KEY)){
+                GoogleSignInAccount account = getIntent().getParcelableExtra(USER_KEY);
+
+                View nav_header = navigationView.getHeaderView(0);
+                ButterKnife.bind(this, nav_header);
+
+                nav_title.setText(account.getGivenName());
+                nav_subtitle.setText(account.getEmail());
+                Utilities.loadImageProfile(this, String.valueOf(account.getPhotoUrl()), img_profile);
+
+            }
+        }
 
         fab_reform.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,7 +167,6 @@ public class MainActivity extends AppCompatActivity
                 dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        onBackPressed();
                     }
                 }).create();
                 dialog.show();
@@ -184,14 +206,13 @@ public class MainActivity extends AppCompatActivity
                 dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        onBackPressed();
                     }
                 }).create();
                 dialog.show();
             }
         });
 
-        fab_budget.setOnClickListener(new View.OnClickListener() {
+        fab_daily.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
@@ -237,43 +258,15 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        navigationView.getMenu().getItem(0).setChecked(true);
-
-        fragmentManager = getSupportFragmentManager();
-        reformFragment = ReformFragment.newInstance();
-
-        linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        reformFragment.setLayoutManager(linearLayoutManager);
-
-        fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
-
-        if (getIntent() != null){
-            if (getIntent().hasExtra(USER_KEY)){
-                GoogleSignInAccount account = getIntent().getParcelableExtra(USER_KEY);
-
-                View nav_header = navigationView.getHeaderView(0);
-                ButterKnife.bind(this, nav_header);
-
-                nav_title.setText(account.getGivenName());
-                nav_subtitle.setText(account.getEmail());
-                Utilities.loadImageProfile(this, String.valueOf(account.getPhotoUrl()), img_profile);
-
-            }
-        }
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        reformFragment = ReformFragment.newInstance();
+        fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
+        reformFragment.setLayoutManager(linearLayoutManager);
     }
 
     @Override
@@ -316,7 +309,7 @@ public class MainActivity extends AppCompatActivity
             materialFragment.setLinearLayoutManager(linearLayoutManager);
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, materialFragment).commit();
         } else if (id == R.id.nav_budget) {
-            fragmentManager.beginTransaction().replace(R.id.frame_content_main, BudgetFragment.newInstance("test")).commit();
+            fragmentManager.beginTransaction().replace(R.id.frame_content_main, BudgetFragment.newInstance()).commit();
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_logout) {
@@ -354,14 +347,14 @@ public class MainActivity extends AppCompatActivity
         isFabOpen = false;
         fab_reform.animate().translationY(0);
         fab_material.animate().translationY(0);
-        fab_budget.animate().translationY(0);
+        fab_daily.animate().translationY(0);
     }
 
     private void openFab(){
         isFabOpen = true;
         fab_reform.animate().translationY(getResources().getDimension(R.dimen.fab_margin_reform));
         fab_material.animate().translationY(getResources().getDimension(R.dimen.fab_margin_material));
-        fab_budget.animate().translationY(getResources().getDimension(R.dimen.fab_margin_budget));
+        fab_daily.animate().translationY(getResources().getDimension(R.dimen.fab_margin_budget));
     }
 
     public void insertReformDatabase(Reform reform){
@@ -481,14 +474,5 @@ public class MainActivity extends AppCompatActivity
         daily.setQuantity(quantity);
         return daily;
     }
-//
-//    private void revokeAccess(){
-//        googleSignInClient.revokeAccess().addOnCompleteListener(this, new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                updateUIGoogle(null);
-//            }
-//        });
-//    }
 
 }

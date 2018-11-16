@@ -30,12 +30,17 @@ import com.example.android.androidlibrary.ViewModel.ReformFactoryViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformViewModel;
 import com.example.android.capstone.Adapter.ReformAdapter;
 
+import java.io.Serializable;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ReformFragment extends Fragment implements ReformAdapter.ReformAdapterOnClickHandler{
 
     private static final String TAG = "reform_key";
+    private static final String TAG_daily = "daily_key";
+
     private static final String ARG_PARAM1 = "param1";
 
     private String mParam1;
@@ -45,7 +50,6 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
     private RecyclerView.LayoutManager linearLayoutManager;
 
     private RecyclerView recyclerView;
-    private Reform[] reforms;
 
     public ReformFragment() {
     }
@@ -61,8 +65,6 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            reforms = (Reform[]) getArguments().getParcelableArray(TAG);
-//            Log.d("teste", String.valueOf(reforms.length));
         }
     }
 
@@ -108,12 +110,7 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
 
     @Override
     public void onClick(Reform reform) {
-
-//        setupDailiesViewModel(reform.getId());
-
-        Intent intent = new Intent(getActivity(), ReformDetailActivity.class);
-        intent.putExtra(TAG, reform);
-        startActivity(intent);
+        setupDailiesViewModel(reform);
     }
 
     public interface OnFragmentInteractionListener {
@@ -135,17 +132,20 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
 
     }
 
-    public void setupDailiesViewModel(int id){
-        ReformFactoryViewModel reformFactoryViewModel = new ReformFactoryViewModel(AppDatabase.getsInstance(getActivity()), id);
+    public void setupDailiesViewModel(final Reform reform){
+        Log.d("teste", String.valueOf(reform.getId()));
+        ReformFactoryViewModel reformFactoryViewModel = new ReformFactoryViewModel(AppDatabase.getsInstance(getActivity()), reform.getId());
         GetReformViewModel getReformViewModel = ViewModelProviders.of(this, reformFactoryViewModel).get(GetReformViewModel.class);
 
         getReformViewModel.getReformAllDailiesLiveData().observe(this, new Observer<ReformAllDailies>() {
             @Override
             public void onChanged(@Nullable ReformAllDailies reformAllDailies) {
                 if (reformAllDailies != null){
-                    Log.d("teste", "Room: " + reformAllDailies.getReform().getRoom());
-                    Log.d("teste", "Size: " + String.valueOf(reformAllDailies.getDailies().size()));
-//                    dailyAdapter.setDailies(reformAllDailies.getDailies());
+                    Intent intent = new Intent(getActivity(), ReformDetailActivity.class);
+                    intent.putExtra(TAG, reform);
+                    intent.putExtra(TAG_daily, (Serializable) reformAllDailies.getDailies());
+                    startActivity(intent);
+
                 } else{
                     Log.d("teste", "No daily");
                 }
@@ -156,4 +156,5 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
     public void setLayoutManager(RecyclerView.LayoutManager layoutManager){
         this.linearLayoutManager = layoutManager;
     }
+
 }

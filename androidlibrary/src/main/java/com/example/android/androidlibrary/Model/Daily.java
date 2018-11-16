@@ -6,13 +6,16 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.Relation;
+import android.os.Parcel;
+import android.os.Parcelable;
 
+import java.io.Serializable;
 import java.util.List;
 
 import static android.arch.persistence.room.ForeignKey.CASCADE;
 
 @Entity(tableName = "daily")
-public class Daily{
+public class Daily implements Serializable{
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id_daily")
@@ -20,10 +23,6 @@ public class Daily{
 
     @ColumnInfo(name = "id_reform")
     private int id_reform;
-
-//    private String material;
-//    private String unit;
-//    private String value;
 
     private int quantity;
     @Embedded
@@ -63,20 +62,4 @@ public class Daily{
         this.material = material;
     }
 
-//    public String getUnit() {
-
-//        return unit;
-//    }
-//
-//    public void setUnit(String unit) {
-//        this.unit = unit;
-//    }
-//
-//    public String getValue() {
-//        return value;
-//    }
-//
-//    public void setValue(String value) {
-//        this.value = value;
-//    }
 }
