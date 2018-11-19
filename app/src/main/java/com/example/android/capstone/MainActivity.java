@@ -60,9 +60,14 @@ public class MainActivity extends AppCompatActivity
 
     private DrawerLayout drawer;
     private FragmentManager fragmentManager;
+
     private ReformFragment reformFragment;
+    private MaterialFragment materialFragment;
+    private BudgetFragment budgetFragment;
+
     private static final String USER_KEY = "userkey";
-    private static final String USER_SIGN_CLIENT = "userSignInClient";
+    private static final String FRAGMENT_STATUS = "fragment_status";
+    private static final String FRAG_STATUS = "frag_status";
 
     @BindView(R.id.txt_nav_title) TextView nav_title;
     @BindView(R.id.txt_nav_subtitle) TextView nav_subtitle;
@@ -74,12 +79,16 @@ public class MainActivity extends AppCompatActivity
 
     private LinearLayoutManager linearLayoutManager;
 
-    Boolean isFabOpen = false;
+    private Boolean isFabOpen = false;
 
     AppDatabase appDatabase;
     private List<String> units = new ArrayList<>();
     private Material[] materials;
     private Reform[] reforms;
+
+    private boolean reform_status = true;
+    private boolean material_status = false;
+    private boolean budget_status = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,8 +131,6 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(0).setChecked(true);
 
-        fragmentManager = getSupportFragmentManager();
-
         if (getIntent() != null){
             if (getIntent().hasExtra(USER_KEY)){
                 GoogleSignInAccount account = getIntent().getParcelableExtra(USER_KEY);
@@ -136,137 +143,179 @@ public class MainActivity extends AppCompatActivity
                 Utilities.loadImageProfile(this, String.valueOf(account.getPhotoUrl()), img_profile);
 
             }
+
+            fragmentManager = getSupportFragmentManager();
+            linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+
+            if (savedInstanceState != null){
+                if (getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_STATUS) instanceof ReformFragment) {
+                    booleanReform();
+                    reformFragment = ReformFragment.newInstance();
+                    reformFragment.setLayoutManager(linearLayoutManager);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
+                } else if(getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_STATUS) instanceof MaterialFragment){
+                    booleanMaterial();
+                    materialFragment = MaterialFragment.newInstance("");
+                    materialFragment.setLinearLayoutManager(linearLayoutManager);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, materialFragment).commit();
+                } else {
+                    booleanBudget();
+                    budgetFragment = BudgetFragment.newInstance();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, budgetFragment).commit();
+                }
+            } else {
+                reformFragment = ReformFragment.newInstance();
+            }
         }
 
         fab_reform.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
 
-                LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
-                View viewDialog = layoutInflater.inflate(R.layout.dialog_reform, null);
+            LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
+            View viewDialog = layoutInflater.inflate(R.layout.dialog_reform, null);
 
-                dialog.setView(viewDialog);
-                dialog.setTitle(getString(R.string.reform_register));
+            dialog.setView(viewDialog);
+            dialog.setTitle(getString(R.string.reform_register));
 
-                final EditText room = viewDialog.findViewById(R.id.edt_dialog_room);
-                final EditText days = viewDialog.findViewById(R.id.edt_dialog_days);
-                final EditText spent = viewDialog.findViewById(R.id.edt_dialog_spent);
+            final EditText room = viewDialog.findViewById(R.id.edt_dialog_room);
+            final EditText days = viewDialog.findViewById(R.id.edt_dialog_days);
+            final EditText spent = viewDialog.findViewById(R.id.edt_dialog_spent);
 
-                dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Reform reform = new Reform();
-                        reform.setRoom(room.getText().toString());
-                        reform.setDays(days.getText().toString());
-                        reform.setTotal_spent(spent.getText().toString());
-                        insertReformDatabase(reform);
-                    }
-                });
+            dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Reform reform = new Reform();
+                    reform.setRoom(room.getText().toString());
+                    reform.setDays(days.getText().toString());
+                    reform.setTotal_spent(spent.getText().toString());
+                    insertReformDatabase(reform);
+                }
+            });
 
-                dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                    }
-                }).create();
-                dialog.show();
+            dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            }).create();
+            dialog.show();
             }
         });
 
         fab_material.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
 
-                LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
-                View viewDialog = layoutInflater.inflate(R.layout.dialog_material, null);
+            LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
+            View viewDialog = layoutInflater.inflate(R.layout.dialog_material, null);
 
-                dialog.setView(viewDialog);
-                dialog.setTitle("Material register");
+            dialog.setView(viewDialog);
+            dialog.setTitle("Material register");
 
-                final EditText edt_material = viewDialog.findViewById(R.id.edt_material);
-                final EditText edt_value = viewDialog.findViewById(R.id.edt_value);
-                final Spinner spn_unit = viewDialog.findViewById(R.id.spn_unit);
-                final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, units);
-                adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-                spn_unit.setAdapter(adapter);
+            final EditText edt_material = viewDialog.findViewById(R.id.edt_material);
+            final EditText edt_value = viewDialog.findViewById(R.id.edt_value);
+            final Spinner spn_unit = viewDialog.findViewById(R.id.spn_unit);
+            final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, units);
+            adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+            spn_unit.setAdapter(adapter);
 
-                dialog.setPositiveButton("Register", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        final Material material = new Material();
-                        material.setMaterial(edt_material.getText().toString());
-                        material.setValue(edt_value.getText().toString());
-                        material.setUnit(spn_unit.getSelectedItem().toString());
+            dialog.setPositiveButton("Register", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    final Material material = new Material();
+                    material.setMaterial(edt_material.getText().toString());
+                    material.setValue(edt_value.getText().toString());
+                    material.setUnit(spn_unit.getSelectedItem().toString());
 
-                        insertMaterialDatabase(material);
-                    }
-                });
+                    insertMaterialDatabase(material);
+                }
+            });
 
-                dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                    }
-                }).create();
-                dialog.show();
-            }
-        });
+            dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            }).create();
+            dialog.show();
+        }
+    });
 
         fab_daily.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
 
-                LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
-                View viewDialog = layoutInflater.inflate(R.layout.dialog_daily, null);
+            LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
+            View viewDialog = layoutInflater.inflate(R.layout.dialog_daily, null);
 
-                dialog.setView(viewDialog);
-                dialog.setTitle(getString(R.string.daily_register));
+            dialog.setView(viewDialog);
+            dialog.setTitle(getString(R.string.daily_register));
 
-                final Spinner spnMaterial = viewDialog.findViewById(R.id.spn_material);
-                final EditText edtQuantity = viewDialog.findViewById(R.id.edt_quantity);
-                final Spinner spnReform = viewDialog.findViewById(R.id.spn_reform);
+            final Spinner spnMaterial = viewDialog.findViewById(R.id.spn_material);
+            final EditText edtQuantity = viewDialog.findViewById(R.id.edt_quantity);
+            final Spinner spnReform = viewDialog.findViewById(R.id.spn_reform);
 
-                ArrayList<Material> listMaterial = setSpinnerListMaterial(materials);
-                ArrayList<Reform> listReforms = setSpinnerListReforms(reforms);
+            ArrayList<Material> listMaterial = setSpinnerListMaterial(materials);
+            ArrayList<Reform> listReforms = setSpinnerListReforms(reforms);
 
-                final ArrayAdapter<Material> adapterMaterial = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listMaterial);
-                adapterMaterial.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spnMaterial.setAdapter(adapterMaterial);
+            final ArrayAdapter<Material> adapterMaterial = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listMaterial);
+            adapterMaterial.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spnMaterial.setAdapter(adapterMaterial);
 
-                final ArrayAdapter<Reform> adapterReform = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listReforms);
-                adapterReform.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spnReform.setAdapter(adapterReform);
+            final ArrayAdapter<Reform> adapterReform = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listReforms);
+            adapterReform.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spnReform.setAdapter(adapterReform);
 
-                dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Material material = (Material) spnMaterial.getSelectedItem();
-                        Reform reform = (Reform) spnReform.getSelectedItem();
-                        Daily daily = getDaily(material, reform, Integer.parseInt(edtQuantity.getText().toString()));
-                        insertDailyDatabase(daily);
-                    }
-                });
+            dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Material material = (Material) spnMaterial.getSelectedItem();
+                    Reform reform = (Reform) spnReform.getSelectedItem();
+                    Daily daily = getDaily(material, reform, Integer.parseInt(edtQuantity.getText().toString()));
+                    insertDailyDatabase(daily);
+                }
+            });
 
-                dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+            dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
 
-                    }
-                }).create();
-                dialog.show();
+                }
+            }).create();
+            dialog.show();
             }
         });
 
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        if (reform_status) {
+            getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, reformFragment);
+        }else if(material_status) {
+            getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, materialFragment);
+        }else {
+            getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, budgetFragment);
+        }
+
+
+
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        reformFragment = ReformFragment.newInstance();
-        fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
-        reformFragment.setLayoutManager(linearLayoutManager);
+        Log.d("teste", "onResume");
+        if (reformFragment != null) {
+            linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+            reformFragment = ReformFragment.newInstance();
+            reformFragment.setLayoutManager(linearLayoutManager);
+            getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
+        }
     }
 
     @Override
@@ -302,14 +351,19 @@ public class MainActivity extends AppCompatActivity
         linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
         if (id == R.id.nav_reforms) {
+            booleanReform();
+            reformFragment = ReformFragment.newInstance();
             reformFragment.setLayoutManager(linearLayoutManager);
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
         } else if (id == R.id.nav_materials) {
-            MaterialFragment materialFragment = MaterialFragment.newInstance("");
+            booleanMaterial();
+            materialFragment = MaterialFragment.newInstance("");
             materialFragment.setLinearLayoutManager(linearLayoutManager);
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, materialFragment).commit();
         } else if (id == R.id.nav_budget) {
-            fragmentManager.beginTransaction().replace(R.id.frame_content_main, BudgetFragment.newInstance()).commit();
+            booleanBudget();
+            budgetFragment = BudgetFragment.newInstance();
+            fragmentManager.beginTransaction().replace(R.id.frame_content_main, budgetFragment).commit();
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_logout) {
@@ -473,6 +527,24 @@ public class MainActivity extends AppCompatActivity
         daily.setMaterial(material);
         daily.setQuantity(quantity);
         return daily;
+    }
+
+    public void booleanReform(){
+        reform_status = true;
+        material_status = false;
+        budget_status = false;
+    }
+
+    public void booleanMaterial(){
+        reform_status = false;
+        material_status = true;
+        budget_status = false;
+    }
+
+    public void booleanBudget(){
+        reform_status = false;
+        material_status = false;
+        budget_status = true;
     }
 
 }

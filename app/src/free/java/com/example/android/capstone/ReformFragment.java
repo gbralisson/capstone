@@ -1,47 +1,51 @@
 package com.example.android.capstone;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ReformFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ReformFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class ReformFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+import com.example.android.androidlibrary.Database.AppDatabase;
+import com.example.android.androidlibrary.Model.Reform;
+import com.example.android.androidlibrary.Model.ReformAllDailies;
+import com.example.android.androidlibrary.ViewModel.GetReformViewModel;
+import com.example.android.androidlibrary.ViewModel.ReformFactoryViewModel;
+import com.example.android.androidlibrary.ViewModel.ReformViewModel;
+import com.example.android.capstone.Adapter.ReformAdapter;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
+import java.io.Serializable;
+
+public class ReformFragment extends Fragment implements ReformAdapter.ReformAdapterOnClickHandler{
+    private static final String TAG = "reform_key";
+    private static final String TAG_daily = "daily_key";
+
     private static final String ARG_PARAM1 = "param1";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
-
+    private Context context;
     private OnFragmentInteractionListener mListener;
+    private ReformAdapter reformAdapter;
+    private RecyclerView.LayoutManager linearLayoutManager;
+
+    private RecyclerView recyclerView;
 
     public ReformFragment() {
-        // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @return A new instance of fragment ReformFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ReformFragment newInstance(String param1) {
+    public static ReformFragment newInstance() {
         ReformFragment fragment = new ReformFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
         fragment.setArguments(args);
         return fragment;
     }
@@ -50,18 +54,32 @@ public class ReformFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_reform, container, false);
+        View view =  inflater.inflate(R.layout.fragment_reform, container, false);
+
+        recyclerView = view.findViewById(R.id.rv_reforms_list);
+        AdView adView = view.findViewById(R.id.adView_free);
+
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        reformAdapter = new ReformAdapter(this);
+        recyclerView.setAdapter(reformAdapter);
+        recyclerView.setHasFixedSize(true);
+
+        setupViewModelReform();
+
+        AdRequest adRequest = new AdRequest.Builder()
+                .build();
+        adView.loadAd(adRequest);
+
+        return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onReformFragmentInteraction(uri);
@@ -85,18 +103,52 @@ public class ReformFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    @Override
+    public void onClick(Reform reform) {
+        setupDailiesViewModel(reform);
+    }
+
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onReformFragmentInteraction(Uri uri);
+    }
+
+    public void setupViewModelReform(){
+        ReformViewModel reformViewModel = ViewModelProviders.of(this).get(ReformViewModel.class);
+        reformViewModel.getReforms().observe(this, new Observer<Reform[]>() {
+            @Override
+            public void onChanged(@Nullable Reform[] reforms) {
+                if (reforms.length == 0){
+                    Log.d("teste", "no reforms");
+                } else {
+                    reformAdapter.setReforms(reforms);
+                }
+            }
+        });
+
+    }
+
+    public void setupDailiesViewModel(final Reform reform){
+        Log.d("teste", String.valueOf(reform.getId()));
+        ReformFactoryViewModel reformFactoryViewModel = new ReformFactoryViewModel(AppDatabase.getsInstance(getActivity()), reform.getId());
+        GetReformViewModel getReformViewModel = ViewModelProviders.of(this, reformFactoryViewModel).get(GetReformViewModel.class);
+
+        getReformViewModel.getReformAllDailiesLiveData().observe(this, new Observer<ReformAllDailies>() {
+            @Override
+            public void onChanged(@Nullable ReformAllDailies reformAllDailies) {
+                if (reformAllDailies != null){
+                    Intent intent = new Intent(getActivity(), ReformDetailActivity.class);
+                    intent.putExtra(TAG, reform);
+                    intent.putExtra(TAG_daily, (Serializable) reformAllDailies.getDailies());
+                    startActivity(intent);
+
+                } else{
+                    Log.d("teste", "No daily");
+                }
+            }
+        });
+    }
+
+    public void setLayoutManager(RecyclerView.LayoutManager layoutManager){
+        this.linearLayoutManager = layoutManager;
     }
 }
