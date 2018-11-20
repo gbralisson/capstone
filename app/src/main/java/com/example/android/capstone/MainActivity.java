@@ -39,7 +39,7 @@ import com.example.android.androidlibrary.Model.Reform;
 import com.example.android.androidlibrary.Utils.Utilities;
 import com.example.android.androidlibrary.ViewModel.MaterialViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformViewModel;
-import com.example.android.androidlibrary.Widget.ReformWidget;
+import com.example.android.capstone.Firebase.FbaseViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -79,14 +79,18 @@ public class MainActivity extends AppCompatActivity
 
     private Boolean isFabOpen = false;
 
-    AppDatabase appDatabase;
-    private List<String> units = new ArrayList<>();
+    private AppDatabase appDatabase;
+    private FbaseViewModel fbaseViewModel;
+
+    private List<String> units;
     private Material[] materials;
     private Reform[] reforms;
 
     private boolean reform_status = true;
     private boolean material_status = false;
     private boolean budget_status = false;
+
+    private Spinner spn_unit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,12 +102,17 @@ public class MainActivity extends AppCompatActivity
 
         appDatabase = AppDatabase.getsInstance(this);
 
+//        FbaseRepository fbaseRepository = new FbaseRepository();
+//        fbaseRepository.writeUnit("Kg");
+//        fbaseRepository.writeUnit("g");
+//        fbaseRepository.writeUnit("pounds");
+//        fbaseRepository.writeUnit("ounces");
+
         fab_reform = findViewById(R.id.fab_reform);
         fab_material = findViewById(R.id.fab_material);
         fab_daily = findViewById(R.id.fab_daily);
 
         openFab();
-        fillSpinner();
         setupReformViewModel();
         setupMaterialViewModel();
 
@@ -214,10 +223,9 @@ public class MainActivity extends AppCompatActivity
 
             final EditText edt_material = viewDialog.findViewById(R.id.edt_material);
             final EditText edt_value = viewDialog.findViewById(R.id.edt_value);
-            final Spinner spn_unit = viewDialog.findViewById(R.id.spn_unit);
-            final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, units);
-            adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-            spn_unit.setAdapter(adapter);
+            spn_unit = viewDialog.findViewById(R.id.spn_unit);
+
+            getUnitsFromDatabase();
 
             dialog.setPositiveButton("Register", new DialogInterface.OnClickListener() {
                 @Override
@@ -463,10 +471,26 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void fillSpinner(){
-        units.add("Kg");
-        units.add("g");
-        units.add("mg");
+    public void getUnitsFromDatabase(){
+        new GetUnits().execute();
+    }
+
+    public class GetUnits extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            fbaseViewModel = ViewModelProviders.of(MainActivity.this).get(FbaseViewModel.class);
+            fbaseViewModel.getUnits().observe(MainActivity.this, new Observer<List<String>>() {
+                @Override
+                public void onChanged(@Nullable List<String> strings) {
+                    final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, strings);
+                    adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+                    spn_unit.setAdapter(adapter);
+                }
+            });
+            return null;
+        }
+
     }
 
     public void setupMaterialViewModel(){
