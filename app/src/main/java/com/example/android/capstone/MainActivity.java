@@ -36,23 +36,22 @@ import com.example.android.androidlibrary.MaterialFragment;
 import com.example.android.androidlibrary.Model.Daily;
 import com.example.android.androidlibrary.Model.Material;
 import com.example.android.androidlibrary.Model.Reform;
-import com.example.android.androidlibrary.Model.ReformAllDailies;
 import com.example.android.androidlibrary.Utils.Utilities;
-import com.example.android.androidlibrary.ViewModel.GetReformViewModel;
 import com.example.android.androidlibrary.ViewModel.MaterialViewModel;
-import com.example.android.androidlibrary.ViewModel.ReformFactoryViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformViewModel;
+import com.example.android.androidlibrary.Widget.ReformWidget;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import java.sql.Ref;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+//http://www.bluebulbprojects.com/MeasureOfThings/api/default.php#rMeasuresKeyHeader
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, ReformFragment.OnFragmentInteractionListener,
@@ -67,7 +66,6 @@ public class MainActivity extends AppCompatActivity
 
     private static final String USER_KEY = "userkey";
     private static final String FRAGMENT_STATUS = "fragment_status";
-    private static final String FRAG_STATUS = "frag_status";
 
     @BindView(R.id.txt_nav_title) TextView nav_title;
     @BindView(R.id.txt_nav_subtitle) TextView nav_subtitle;
@@ -95,7 +93,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         appDatabase = AppDatabase.getsInstance(this);
@@ -109,7 +107,7 @@ public class MainActivity extends AppCompatActivity
         setupReformViewModel();
         setupMaterialViewModel();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -302,14 +300,11 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, budgetFragment);
         }
 
-
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("teste", "onResume");
         if (reformFragment != null) {
             linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
             reformFragment = ReformFragment.newInstance();

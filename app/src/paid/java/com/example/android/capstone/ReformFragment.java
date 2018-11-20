@@ -28,6 +28,7 @@ import com.example.android.androidlibrary.ViewModel.GetReformViewModel;
 import com.example.android.androidlibrary.ViewModel.MaterialViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformFactoryViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformViewModel;
+import com.example.android.androidlibrary.Widget.ReformWidget;
 import com.example.android.capstone.Adapter.ReformAdapter;
 
 import java.io.Serializable;
@@ -126,6 +127,7 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
                     Log.d("teste", "no reforms");
                 } else {
                     reformAdapter.setReforms(reforms);
+                    (new ReformWidget()).getReform(getContext(), reforms);
                 }
             }
         });
@@ -133,7 +135,6 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
     }
 
     public void setupDailiesViewModel(final Reform reform){
-        Log.d("teste", String.valueOf(reform.getId()));
         ReformFactoryViewModel reformFactoryViewModel = new ReformFactoryViewModel(AppDatabase.getsInstance(getActivity()), reform.getId());
         GetReformViewModel getReformViewModel = ViewModelProviders.of(this, reformFactoryViewModel).get(GetReformViewModel.class);
 
