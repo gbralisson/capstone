@@ -4,6 +4,7 @@
     android:id="@+id/rv_reforms_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.android.capstone.ReformFragment">
+    tools:context="com.example.android.capstone.ReformFragment"
+    android:background="@color/light_gray">
 
 </android.support.v7.widget.RecyclerView>

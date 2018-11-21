@@ -14,6 +14,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -45,9 +46,9 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
     private static final String TAG = "reform_key";
     private static final String TAG_daily = "daily_key";
 
-    @BindView(R.id.txt_days) TextView txt_days;
-    @BindView(R.id.txt_spent) TextView txt_spent;
-    @BindView(R.id.rv_daily_list) RecyclerView rv_daily;
+    @BindView(R.id.txt_reform_detail_days) TextView txt_days;
+    @BindView(R.id.txt_reform_detail_spent) TextView txt_spent;
+    @BindView(R.id.rv_reform_detail_daily_list) RecyclerView rv_daily;
 
     private AppDatabase database;
     private DailyAdapter dailyAdapter;
@@ -61,6 +62,7 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
         setContentView(R.layout.activity_reform_detail);
         ButterKnife.bind(this);
         ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         if (getIntent() != null){
             if (getIntent().hasExtra(TAG)){
@@ -84,6 +86,17 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
             }
         }
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == android.R.id.home){
+            onBackPressed();
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

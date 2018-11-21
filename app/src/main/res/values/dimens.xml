@@ -6,8 +6,14 @@
     <dimen name="nav_header_height">176dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="fab_margin_end">25dp</dimen>
+    <dimen name="fab_margin_bottom">25dp</dimen>
 
-    <dimen name="fab_margin_reform">80dp</dimen>
-    <dimen name="fab_margin_material">130dp</dimen>
-    <dimen name="fab_margin_budget">180dp</dimen>
+    <dimen name="fab_margin_reform">60dp</dimen>
+    <dimen name="fab_margin_material">110dp</dimen>
+    <dimen name="fab_margin_budget">160dp</dimen>
+
+    <dimen name="fab_margin_origin">0dp</dimen>
+
+    <dimen name="text_size_20sp">20sp</dimen>
+    <dimen name="margin_10dp">10dp</dimen>
 </resources>

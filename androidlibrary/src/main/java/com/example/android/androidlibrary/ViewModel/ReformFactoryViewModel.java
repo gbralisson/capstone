@@ -13,7 +13,6 @@ public class ReformFactoryViewModel extends ViewModelProvider.NewInstanceFactory
     int id;
 
     public ReformFactoryViewModel(AppDatabase database, int id){
-        Log.d("teste", String.valueOf(id));
         this.database = database;
         this.id = id;
     }

@@ -12,6 +12,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/txt_AGDaily"
+        android:textSize="@dimen/text_size_20sp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="@dimen/margin_10dp"/>
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"

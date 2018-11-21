@@ -8,9 +8,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatDrawableManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,8 +55,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-//http://www.bluebulbprojects.com/MeasureOfThings/api/default.php#rMeasuresKeyHeader
-
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, ReformFragment.OnFragmentInteractionListener,
         MaterialFragment.OnFragmentInteractionListener, BudgetFragment.OnFragmentInteractionListener{
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.txt_nav_title) TextView nav_title;
     @BindView(R.id.txt_nav_subtitle) TextView nav_subtitle;
     @BindView(R.id.img_profile_google) ImageView img_profile;
+    private CollapsingToolbarLayout collapsingToolbarLayout;
 
     private FloatingActionButton fab_reform;
     private FloatingActionButton fab_material;
@@ -112,7 +115,10 @@ public class MainActivity extends AppCompatActivity
         fab_material = findViewById(R.id.fab_material);
         fab_daily = findViewById(R.id.fab_daily);
 
-        openFab();
+        fab_reform.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_reform));
+        fab_material.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_material));
+        fab_daily.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_report));
+
         setupReformViewModel();
         setupMaterialViewModel();
 
@@ -367,8 +373,6 @@ public class MainActivity extends AppCompatActivity
             booleanBudget();
             budgetFragment = BudgetFragment.newInstance();
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, budgetFragment).commit();
-        } else if (id == R.id.nav_manage) {
-
         } else if (id == R.id.nav_logout) {
             signOut();
         } else if (id == R.id.nav_exit) {
@@ -409,9 +413,9 @@ public class MainActivity extends AppCompatActivity
 
     private void openFab(){
         isFabOpen = true;
-        fab_reform.animate().translationY(getResources().getDimension(R.dimen.fab_margin_reform));
-        fab_material.animate().translationY(getResources().getDimension(R.dimen.fab_margin_material));
-        fab_daily.animate().translationY(getResources().getDimension(R.dimen.fab_margin_budget));
+        fab_reform.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_reform));
+        fab_material.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_material));
+        fab_daily.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_budget));
     }
 
     public void insertReformDatabase(Reform reform){

@@ -9,20 +9,30 @@
         android:id="@+id/edt_dialog_room"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Room"/>
+        android:inputType="text"
+        android:hint="@string/txt_reform_room"/>
 
-    <EditText
-        android:id="@+id/edt_dialog_days"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="number"
-        android:hint="Days"/>
+        android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/edt_dialog_spent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:hint="Spent"/>
+        <EditText
+            android:id="@+id/edt_dialog_days"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:layout_weight="1"
+            android:hint="@string/txt_reform_days"/>
+
+        <EditText
+            android:id="@+id/edt_dialog_spent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:layout_weight="1"
+            android:hint="@string/txt_reform_spent"/>
+
+    </LinearLayout>
 
 </LinearLayout>

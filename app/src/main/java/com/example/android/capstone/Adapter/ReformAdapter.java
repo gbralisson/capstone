@@ -41,7 +41,7 @@ public class ReformAdapter extends RecyclerView.Adapter<ReformAdapter.ReformAdap
     public void onBindViewHolder(@NonNull ReformAdapterViewHolder reformAdapterViewHolder, int i) {
         reformAdapterViewHolder.room.setText(reforms[i].getRoom());
         reformAdapterViewHolder.days.setText(reforms[i].getDays());
-        reformAdapterViewHolder.spent.setText(reforms[i].getTotal_spent());
+        reformAdapterViewHolder.budget.setText(reforms[i].getTotal_spent());
     }
 
     @Override
@@ -59,14 +59,14 @@ public class ReformAdapter extends RecyclerView.Adapter<ReformAdapter.ReformAdap
 
         TextView room;
         TextView days;
-        TextView spent;
+        TextView budget;
 
         public ReformAdapterViewHolder(@NonNull View itemView) {
             super(itemView);
 //            ButterKnife.bind(itemView);
-            room = itemView.findViewById(R.id.txt_room);
-            days = itemView.findViewById(R.id.txt_days);
-            spent = itemView.findViewById(R.id.txt_spent);
+            room = itemView.findViewById(R.id.txt_reform_item_room);
+            days = itemView.findViewById(R.id.txt_reform_item_days);
+            budget = itemView.findViewById(R.id.txt_reform_item_budget);
             itemView.setOnClickListener(this);
 
         }

@@ -9,18 +9,28 @@
         android:id="@+id/edt_material"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Material"/>
+        android:inputType="text"
+        android:hint="@string/txt_material_name"/>
 
-    <Spinner
-        android:id="@+id/spn_unit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <EditText
-        android:id="@+id/edt_value"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:hint="Value"/>
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/spn_unit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <EditText
+            android:id="@+id/edt_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:hint="@string/txt_value"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
 
 </LinearLayout>
