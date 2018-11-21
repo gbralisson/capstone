@@ -20,6 +20,7 @@ import com.example.android.androidlibrary.Model.ReformAllDailies;
 import com.example.android.androidlibrary.ViewModel.GetReformViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformFactoryViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformViewModel;
+import com.example.android.androidlibrary.Widget.ReformWidget;
 import com.example.android.capstone.Adapter.ReformAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -121,6 +122,7 @@ public class ReformFragment extends Fragment implements ReformAdapter.ReformAdap
                     Log.d("teste", "no reforms");
                 } else {
                     reformAdapter.setReforms(reforms);
+                    (new ReformWidget()).getReform(getContext(), reforms);
                 }
             }
         });

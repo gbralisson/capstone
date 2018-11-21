@@ -39,6 +39,7 @@ public class DailyAdapter extends RecyclerView.Adapter<DailyAdapter.DailyAdapter
         dailyAdapterViewHolder.txt_daily_material.setText(dailies.get(i).getMaterial().getMaterial());
         dailyAdapterViewHolder.txt_daily_unit.setText(dailies.get(i).getMaterial().getUnit());
         dailyAdapterViewHolder.txt_daily_value.setText(dailies.get(i).getMaterial().getValue());
+        dailyAdapterViewHolder.txt_daily_quantity.setText(String.valueOf(dailies.get(i).getQuantity()));
     }
 
     @Override
@@ -53,12 +54,14 @@ public class DailyAdapter extends RecyclerView.Adapter<DailyAdapter.DailyAdapter
         TextView txt_daily_material;
         TextView txt_daily_unit;
         TextView txt_daily_value;
+        TextView txt_daily_quantity;
 
         public DailyAdapterViewHolder(@NonNull View itemView) {
             super(itemView);
             txt_daily_material = itemView.findViewById(R.id.txt_daily_material);
-            txt_daily_unit= itemView.findViewById(R.id.txt_daily_unit);
-            txt_daily_value= itemView.findViewById(R.id.txt_daily_value);
+            txt_daily_unit = itemView.findViewById(R.id.txt_daily_unit);
+            txt_daily_value = itemView.findViewById(R.id.txt_daily_value);
+            txt_daily_quantity = itemView.findViewById(R.id.txt_daily_quantity);
             itemView.setOnClickListener(this);
         }
 

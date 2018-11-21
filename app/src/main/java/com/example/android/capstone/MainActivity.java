@@ -34,6 +34,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.androidlibrary.AboutFragment;
 import com.example.android.androidlibrary.BudgetFragment;
 import com.example.android.androidlibrary.Database.AppDatabase;
 import com.example.android.androidlibrary.MaterialFragment;
@@ -57,7 +58,7 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, ReformFragment.OnFragmentInteractionListener,
-        MaterialFragment.OnFragmentInteractionListener, BudgetFragment.OnFragmentInteractionListener{
+        MaterialFragment.OnFragmentInteractionListener, BudgetFragment.OnFragmentInteractionListener, AboutFragment.OnFragmentInteractionListener{
 
     private DrawerLayout drawer;
     private FragmentManager fragmentManager;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity
     private ReformFragment reformFragment;
     private MaterialFragment materialFragment;
     private BudgetFragment budgetFragment;
+    private AboutFragment aboutFragment;
 
     private static final String USER_KEY = "userkey";
     private static final String FRAGMENT_STATUS = "fragment_status";
@@ -92,6 +94,7 @@ public class MainActivity extends AppCompatActivity
     private boolean reform_status = true;
     private boolean material_status = false;
     private boolean budget_status = false;
+    private boolean about_status = false;
 
     private Spinner spn_unit;
 
@@ -171,10 +174,14 @@ public class MainActivity extends AppCompatActivity
                     materialFragment = MaterialFragment.newInstance("");
                     materialFragment.setLinearLayoutManager(linearLayoutManager);
                     getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, materialFragment).commit();
-                } else {
+                } else if (getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_STATUS) instanceof BudgetFragment){
                     booleanBudget();
                     budgetFragment = BudgetFragment.newInstance();
                     getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, budgetFragment).commit();
+                } else {
+                    booleanAbout();
+                    aboutFragment = AboutFragment.newInstance();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, aboutFragment).commit();
                 }
             } else {
                 reformFragment = ReformFragment.newInstance();
@@ -269,16 +276,21 @@ public class MainActivity extends AppCompatActivity
             final EditText edtQuantity = viewDialog.findViewById(R.id.edt_quantity);
             final Spinner spnReform = viewDialog.findViewById(R.id.spn_reform);
 
-            ArrayList<Material> listMaterial = setSpinnerListMaterial(materials);
-            ArrayList<Reform> listReforms = setSpinnerListReforms(reforms);
+            if (materials != null) {
+                ArrayList<Material> listMaterial = setSpinnerListMaterial(materials);
 
-            final ArrayAdapter<Material> adapterMaterial = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listMaterial);
-            adapterMaterial.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spnMaterial.setAdapter(adapterMaterial);
+                final ArrayAdapter<Material> adapterMaterial = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listMaterial);
+                adapterMaterial.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnMaterial.setAdapter(adapterMaterial);
+            }
 
-            final ArrayAdapter<Reform> adapterReform = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listReforms);
-            adapterReform.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spnReform.setAdapter(adapterReform);
+            if (reforms != null) {
+                ArrayList<Reform> listReforms = setSpinnerListReforms(reforms);
+
+                final ArrayAdapter<Reform> adapterReform = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listReforms);
+                adapterReform.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnReform.setAdapter(adapterReform);
+            }
 
             dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
                 @Override
@@ -310,8 +322,10 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, reformFragment);
         }else if(material_status) {
             getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, materialFragment);
-        }else {
+        }else if (budget_status){
             getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, budgetFragment);
+        } else {
+            getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, aboutFragment);
         }
 
     }
@@ -373,6 +387,10 @@ public class MainActivity extends AppCompatActivity
             booleanBudget();
             budgetFragment = BudgetFragment.newInstance();
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, budgetFragment).commit();
+        } else if (id == R.id.nav_about) {
+            booleanAbout();
+            aboutFragment = AboutFragment.newInstance();
+            fragmentManager.beginTransaction().replace(R.id.frame_content_main, aboutFragment).commit();
         } else if (id == R.id.nav_logout) {
             signOut();
         } else if (id == R.id.nav_exit) {
@@ -393,6 +411,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBudgetFragmentInteraction(Uri uri) {
+    }
+
+    @Override
+    public void onAboutFragmentInteraction(Uri uri) {
     }
 
     private void signOut(){
@@ -525,15 +547,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     public ArrayList<Material> setSpinnerListMaterial(Material[] materials){
-        ArrayList<Material> listMaterial = new ArrayList<>();
-        Collections.addAll(listMaterial, materials);
-        return listMaterial;
+        if (materials != null) {
+            ArrayList<Material> listMaterial = new ArrayList<>();
+            Collections.addAll(listMaterial, materials);
+            return listMaterial;
+        }
+        return null;
     }
 
     public ArrayList<Reform> setSpinnerListReforms(Reform[] reforms){
-        ArrayList<Reform> listReforms = new ArrayList<>();
-        Collections.addAll(listReforms, reforms);
-        return listReforms;
+        if (reforms != null) {
+            ArrayList<Reform> listReforms = new ArrayList<>();
+            Collections.addAll(listReforms, reforms);
+            return listReforms;
+        }
+        return null;
     }
 
     public void setMaterials(Material[] materials){
@@ -556,18 +584,28 @@ public class MainActivity extends AppCompatActivity
         reform_status = true;
         material_status = false;
         budget_status = false;
+        about_status = false;
     }
 
     public void booleanMaterial(){
         reform_status = false;
         material_status = true;
         budget_status = false;
+        about_status = false;
     }
 
     public void booleanBudget(){
         reform_status = false;
         material_status = false;
         budget_status = true;
+        about_status = false;
+    }
+
+    public void booleanAbout(){
+        reform_status = false;
+        material_status = false;
+        budget_status = false;
+        about_status = true;
     }
 
 }
