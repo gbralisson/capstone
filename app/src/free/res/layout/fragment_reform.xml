@@ -1,18 +1,42 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/light_gray"
     android:orientation="vertical"
-    xmlns:ads="http://schemas.android.com/apk/res-auto"
-    tools:context="com.example.android.capstone.ReformFragment"
-    android:background="@color/light_gray">
+    tools:context="com.example.android.capstone.ReformFragment">
+
+    <TextView
+        android:id="@+id/txt_noReform"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="80dp"
+        android:gravity="center_vertical"
+        android:text="@string/no_reform"
+        android:textSize="@dimen/text_size_20sp"
+        android:visibility="gone"
+        ads:layout_constraintEnd_toEndOf="parent"
+        ads:layout_constraintHorizontal_bias="0.501"
+        ads:layout_constraintStart_toStartOf="parent"
+        ads:layout_constraintTop_toTopOf="@+id/rv_reforms_list" />
 
     <android.support.v7.widget.RecyclerView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/rv_reforms_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="474dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        ads:layout_constraintBottom_toTopOf="@+id/adView_free"
+        ads:layout_constraintEnd_toEndOf="parent"
+        ads:layout_constraintStart_toStartOf="parent"
+        ads:layout_constraintTop_toTopOf="parent"
+        ads:layout_constraintVertical_bias="0.0"
         tools:context="com.example.android.capstone.ReformFragment">
 
     </android.support.v7.widget.RecyclerView>
@@ -21,8 +45,14 @@
         android:id="@+id/adView_free"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         ads:adSize="BANNER"
-        ads:adUnitId="@string/banner_ad_unit_id_test" />
+        ads:adUnitId="@string/banner_ad_unit_id_test"
+        ads:layout_constraintBottom_toBottomOf="parent"
+        ads:layout_constraintEnd_toEndOf="parent"
+        ads:layout_constraintStart_toStartOf="parent" />
 
-</LinearLayout>
+</android.support.constraint.ConstraintLayout>

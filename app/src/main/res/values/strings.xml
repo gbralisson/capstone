@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Capstone</string>
+    <string name="app_name">AG Daily</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -28,4 +28,6 @@
     <string name="txt_reform_detail_spent">Total Spent</string>
     <string name="txt_daily_name">Daily</string>
     <string name="txt_AGDaily">AG Daily</string>
+
+    <string name="no_reform">No Reform registered</string>
 </resources>

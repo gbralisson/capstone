@@ -65,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 updateUIGoogle(account);
             } catch (ApiException e) {
-                Log.e("teste", String.valueOf(e.getStatusCode()));
+                e.printStackTrace();
             }
 
         }
@@ -77,9 +77,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void updateUIGoogle(GoogleSignInAccount account){
-        if (account == null){
-            Log.d("teste", "No user logged");
-        }else{
+        if (account != null){
             User user = new User();
             user.setUsername(account.getGivenName());
             user.setEmail(account.getEmail());

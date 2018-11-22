@@ -48,9 +48,9 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
 
     @BindView(R.id.txt_reform_detail_days) TextView txt_days;
     @BindView(R.id.txt_reform_detail_spent) TextView txt_spent;
+    @BindView(R.id.txt_noDaily) TextView txt_noDaily;
     @BindView(R.id.rv_reform_detail_daily_list) RecyclerView rv_daily;
 
-    private AppDatabase database;
     private DailyAdapter dailyAdapter;
     private Reform reform;
 
@@ -69,8 +69,6 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
                 reform = getIntent().getParcelableExtra(TAG);
                 dailies = (List<Daily>) getIntent().getExtras().getSerializable(TAG_daily);
 
-                database = AppDatabase.getsInstance(this);
-
                 actionBar.setTitle(reform.getRoom());
                 txt_days.setText(reform.getDays());
                 txt_spent.setText(reform.getTotal_spent());
@@ -81,7 +79,12 @@ public class ReformDetailActivity extends AppCompatActivity implements DailyAdap
                 dailyAdapter = new DailyAdapter(this);
                 rv_daily.setAdapter(dailyAdapter);
 
-                dailyAdapter.setDailies(dailies);
+                if (dailies.size() != 0) {
+                    txt_noDaily.setVisibility(View.GONE);
+                    dailyAdapter.setDailies(dailies);
+                } else {
+                    txt_noDaily.setVisibility(View.VISIBLE);
+                }
 
             }
         }

@@ -7,6 +7,7 @@
 
     <string name="reform_register">Reform Register</string>
     <string name="daily_register">Daily Register</string>
+    <string name="material_register">Material Register</string>
     <string name="btn_register">Register</string>
     <string name="btn_cancel">Cancel</string>
 
@@ -32,5 +33,12 @@
         monitoring your budget without being afraid with the amount of materials or the reform delay.</string>
     <string name="txt_author_thankful">All icons were made by https://www.flaticon.com/authors/freepik from https://www.flaticon.com/</string>
     <string name="txt_license">www.flaticon.com is licensed by http://creativecommons.org/licenses/by/3.0/</string>
+
+    <string name="reform_added">Reform has been added</string>
+    <string name="material_added">Material has been added</string>
+    <string name="daily_added">Daily has been added</string>
+
+    <string name="no_material">No material registered</string>
+    <string name="no_daily">No daily registered</string>
 
 </resources>

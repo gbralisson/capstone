@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -108,12 +109,6 @@ public class MainActivity extends AppCompatActivity
 
         appDatabase = AppDatabase.getsInstance(this);
 
-//        FbaseRepository fbaseRepository = new FbaseRepository();
-//        fbaseRepository.writeUnit("Kg");
-//        fbaseRepository.writeUnit("g");
-//        fbaseRepository.writeUnit("pounds");
-//        fbaseRepository.writeUnit("ounces");
-
         fab_reform = findViewById(R.id.fab_reform);
         fab_material = findViewById(R.id.fab_material);
         fab_daily = findViewById(R.id.fab_daily);
@@ -156,7 +151,9 @@ public class MainActivity extends AppCompatActivity
 
                 nav_title.setText(account.getGivenName());
                 nav_subtitle.setText(account.getEmail());
-                Utilities.loadImageProfile(this, String.valueOf(account.getPhotoUrl()), img_profile);
+
+                if (account.getPhotoUrl() != null)
+                    Utilities.loadImageProfile(this, String.valueOf(account.getPhotoUrl()), img_profile);
 
             }
 
@@ -232,7 +229,7 @@ public class MainActivity extends AppCompatActivity
             View viewDialog = layoutInflater.inflate(R.layout.dialog_material, null);
 
             dialog.setView(viewDialog);
-            dialog.setTitle("Material register");
+            dialog.setTitle(getString(R.string.material_register));
 
             final EditText edt_material = viewDialog.findViewById(R.id.edt_material);
             final EditText edt_value = viewDialog.findViewById(R.id.edt_value);
@@ -240,7 +237,7 @@ public class MainActivity extends AppCompatActivity
 
             getUnitsFromDatabase();
 
-            dialog.setPositiveButton("Register", new DialogInterface.OnClickListener() {
+            dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     final Material material = new Material();
@@ -252,7 +249,7 @@ public class MainActivity extends AppCompatActivity
                 }
             });
 
-            dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                 }
@@ -333,7 +330,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        if (reformFragment != null) {
+        if (reformFragment != null && materialFragment == null && budgetFragment == null && aboutFragment == null) {
             linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
             reformFragment = ReformFragment.newInstance();
             reformFragment.setLayoutManager(linearLayoutManager);
@@ -347,7 +344,11 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if (reform_status){
+                exit();
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
@@ -394,7 +395,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_logout) {
             signOut();
         } else if (id == R.id.nav_exit) {
-
+            exit();
         }
 
         drawer.closeDrawer(GravityCompat.START);
@@ -426,6 +427,12 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private void exit(){
+        moveTaskToBack(true);
+        android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(1);
+    }
+
     private void closeFab(){
         isFabOpen = false;
         fab_reform.animate().translationY(0);
@@ -455,7 +462,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Toast.makeText(getApplicationContext(), "Reform has been added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.reform_added), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -474,7 +481,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Toast.makeText(getApplicationContext(), "Material has been added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.material_added), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -493,7 +500,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Toast.makeText(getApplicationContext(), "Daily has been added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.daily_added), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -524,9 +531,7 @@ public class MainActivity extends AppCompatActivity
         materialViewModel.getMaterials().observe(this, new Observer<Material[]>() {
             @Override
             public void onChanged(@Nullable Material[] materials) {
-                if (materials.length == 0)
-                    Log.d("teste", "No material");
-                else
+                if (materials.length != 0)
                     setMaterials(materials);
             }
         });
@@ -537,9 +542,7 @@ public class MainActivity extends AppCompatActivity
         reformViewModel.getReforms().observe(this, new Observer<Reform[]>() {
             @Override
             public void onChanged(@Nullable Reform[] reforms) {
-                if (reforms.length == 0){
-                    Log.d("teste", "No reform");
-                } else {
+                if (reforms.length != 0){
                     setReforms(reforms);
                 }
             }
