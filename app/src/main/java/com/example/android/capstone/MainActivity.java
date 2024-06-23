@@ -1,18 +1,21 @@
 package com.example.android.capstone;
 
-import android.arch.lifecycle.ViewModel;
-import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatDrawableManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,7 +28,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -33,21 +35,23 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.androidlibrary.AboutFragment;
 import com.example.android.androidlibrary.BudgetFragment;
 import com.example.android.androidlibrary.Database.AppDatabase;
-import com.example.android.androidlibrary.Database.MaterialDatabase;
 import com.example.android.androidlibrary.MaterialFragment;
+import com.example.android.androidlibrary.Model.Daily;
 import com.example.android.androidlibrary.Model.Material;
 import com.example.android.androidlibrary.Model.Reform;
-import com.example.android.androidlibrary.Model.User;
 import com.example.android.androidlibrary.Utils.Utilities;
+import com.example.android.androidlibrary.ViewModel.MaterialViewModel;
 import com.example.android.androidlibrary.ViewModel.ReformViewModel;
+import com.example.android.capstone.Firebase.FbaseViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -55,52 +59,68 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, ReformFragment.OnFragmentInteractionListener,
-        MaterialFragment.OnFragmentInteractionListener, BudgetFragment.OnFragmentInteractionListener{
+        MaterialFragment.OnFragmentInteractionListener, BudgetFragment.OnFragmentInteractionListener, AboutFragment.OnFragmentInteractionListener{
 
     private DrawerLayout drawer;
     private FragmentManager fragmentManager;
+
     private ReformFragment reformFragment;
+    private MaterialFragment materialFragment;
+    private BudgetFragment budgetFragment;
+    private AboutFragment aboutFragment;
+
     private static final String USER_KEY = "userkey";
-    private static final String USER_SIGN_CLIENT = "userSignInClient";
+    private static final String FRAGMENT_STATUS = "fragment_status";
 
     @BindView(R.id.txt_nav_title) TextView nav_title;
     @BindView(R.id.txt_nav_subtitle) TextView nav_subtitle;
     @BindView(R.id.img_profile_google) ImageView img_profile;
+    private CollapsingToolbarLayout collapsingToolbarLayout;
 
     private FloatingActionButton fab_reform;
     private FloatingActionButton fab_material;
-    private FloatingActionButton fab_budget;
+    private FloatingActionButton fab_daily;
 
     private LinearLayoutManager linearLayoutManager;
 
-    Boolean isFabOpen = false;
+    private Boolean isFabOpen = false;
 
-    AppDatabase ReformDatabase;
-    MaterialDatabase materialDatabase;
-    private List<String> units = new ArrayList<>();
+    private AppDatabase appDatabase;
+    private FbaseViewModel fbaseViewModel;
+
+    private List<String> units;
+    private Material[] materials;
+    private Reform[] reforms;
+
+    private boolean reform_status = true;
+    private boolean material_status = false;
+    private boolean budget_status = false;
+    private boolean about_status = false;
+
+    private Spinner spn_unit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        ActionBar actionBar = getSupportActionBar();
-//        actionBar.setTitle(getResources().getString(R.string.txt_AGDaily));
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        ReformDatabase = AppDatabase.getsInstance(this);
-        materialDatabase = MaterialDatabase.getsInstance(this);
+        appDatabase = AppDatabase.getsInstance(this);
 
         fab_reform = findViewById(R.id.fab_reform);
         fab_material = findViewById(R.id.fab_material);
-        fab_budget = findViewById(R.id.fab_budget);
+        fab_daily = findViewById(R.id.fab_daily);
 
-        openFab();
-        fillSpinner();
+        fab_reform.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_reform));
+        fab_material.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_material));
+        fab_daily.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_menu_report));
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        setupReformViewModel();
+        setupMaterialViewModel();
+
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -109,82 +129,6 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     openFab();
                 }
-            }
-        });
-
-        fab_reform.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
-
-                LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
-                View viewDialog = layoutInflater.inflate(R.layout.dialog_reform, null);
-
-                dialog.setView(viewDialog);
-                dialog.setTitle(getString(R.string.reform_register));
-
-                final EditText room = viewDialog.findViewById(R.id.edt_dialog_room);
-                final EditText days = viewDialog.findViewById(R.id.edt_dialog_days);
-                final EditText spent = viewDialog.findViewById(R.id.edt_dialog_spent);
-
-                dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Reform reform = new Reform();
-                        reform.setRoom(room.getText().toString());
-                        reform.setDays(days.getText().toString());
-                        reform.setTotal_spent(spent.getText().toString());
-                        insertReformDatabase(reform);
-                    }
-                });
-
-                dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        onBackPressed();
-                    }
-                }).create();
-                dialog.show();
-            }
-        });
-
-        fab_material.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
-
-                LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
-                View viewDialog = layoutInflater.inflate(R.layout.dialog_material, null);
-
-                dialog.setView(viewDialog);
-                dialog.setTitle("Material register");
-
-                final EditText edt_material = viewDialog.findViewById(R.id.edt_material);
-                final EditText edt_value = viewDialog.findViewById(R.id.edt_value);
-                final Spinner spn_unit = viewDialog.findViewById(R.id.spn_unit);
-                final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, units);
-                adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-                spn_unit.setAdapter(adapter);
-
-                dialog.setPositiveButton("Register", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        final Material material = new Material();
-                        material.setMaterial(edt_material.getText().toString());
-                        material.setValue(edt_value.getText().toString());
-                        material.setUnit(spn_unit.getSelectedItem().toString());
-
-                        insertMaterialDatabase(material);
-                    }
-                });
-
-                dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        onBackPressed();
-                    }
-                }).create();
-                dialog.show();
             }
         });
 
@@ -198,14 +142,6 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(0).setChecked(true);
 
-        fragmentManager = getSupportFragmentManager();
-        reformFragment = ReformFragment.newInstance();
-
-        linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        reformFragment.setLayoutManager(linearLayoutManager);
-
-        fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
-
         if (getIntent() != null){
             if (getIntent().hasExtra(USER_KEY)){
                 GoogleSignInAccount account = getIntent().getParcelableExtra(USER_KEY);
@@ -215,9 +151,178 @@ public class MainActivity extends AppCompatActivity
 
                 nav_title.setText(account.getGivenName());
                 nav_subtitle.setText(account.getEmail());
-                Utilities.loadImageProfile(this, String.valueOf(account.getPhotoUrl()), img_profile);
+
+                if (account.getPhotoUrl() != null)
+                    Utilities.loadImageProfile(this, String.valueOf(account.getPhotoUrl()), img_profile);
 
             }
+
+            fragmentManager = getSupportFragmentManager();
+            linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+
+            if (savedInstanceState != null){
+                if (getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_STATUS) instanceof ReformFragment) {
+                    booleanReform();
+                    reformFragment = ReformFragment.newInstance();
+                    reformFragment.setLayoutManager(linearLayoutManager);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
+                } else if(getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_STATUS) instanceof MaterialFragment){
+                    booleanMaterial();
+                    materialFragment = MaterialFragment.newInstance("");
+                    materialFragment.setLinearLayoutManager(linearLayoutManager);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, materialFragment).commit();
+                } else if (getSupportFragmentManager().getFragment(savedInstanceState, FRAGMENT_STATUS) instanceof BudgetFragment){
+                    booleanBudget();
+                    budgetFragment = BudgetFragment.newInstance();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, budgetFragment).commit();
+                } else {
+                    booleanAbout();
+                    aboutFragment = AboutFragment.newInstance();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, aboutFragment).commit();
+                }
+            } else {
+                reformFragment = ReformFragment.newInstance();
+            }
+        }
+
+        fab_reform.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+
+            LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
+            View viewDialog = layoutInflater.inflate(R.layout.dialog_reform, null);
+
+            dialog.setView(viewDialog);
+            dialog.setTitle(getString(R.string.reform_register));
+
+            final EditText room = viewDialog.findViewById(R.id.edt_dialog_room);
+            final EditText days = viewDialog.findViewById(R.id.edt_dialog_days);
+            final EditText spent = viewDialog.findViewById(R.id.edt_dialog_spent);
+
+            dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Reform reform = new Reform();
+                    reform.setRoom(room.getText().toString());
+                    reform.setDays(days.getText().toString());
+                    reform.setTotal_spent(spent.getText().toString());
+                    insertReformDatabase(reform);
+                }
+            });
+
+            dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            }).create();
+            dialog.show();
+            }
+        });
+
+        fab_material.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+
+            LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
+            View viewDialog = layoutInflater.inflate(R.layout.dialog_material, null);
+
+            dialog.setView(viewDialog);
+            dialog.setTitle(getString(R.string.material_register));
+
+            final EditText edt_material = viewDialog.findViewById(R.id.edt_material);
+            final EditText edt_value = viewDialog.findViewById(R.id.edt_value);
+            spn_unit = viewDialog.findViewById(R.id.spn_unit);
+
+            getUnitsFromDatabase();
+
+            dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    final Material material = new Material();
+                    material.setMaterial(edt_material.getText().toString());
+                    material.setValue(edt_value.getText().toString());
+                    material.setUnit(spn_unit.getSelectedItem().toString());
+
+                    insertMaterialDatabase(material);
+                }
+            });
+
+            dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            }).create();
+            dialog.show();
+        }
+    });
+
+        fab_daily.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
+
+            LayoutInflater layoutInflater = MainActivity.this.getLayoutInflater();
+            View viewDialog = layoutInflater.inflate(R.layout.dialog_daily, null);
+
+            dialog.setView(viewDialog);
+            dialog.setTitle(getString(R.string.daily_register));
+
+            final Spinner spnMaterial = viewDialog.findViewById(R.id.spn_material);
+            final EditText edtQuantity = viewDialog.findViewById(R.id.edt_quantity);
+            final Spinner spnReform = viewDialog.findViewById(R.id.spn_reform);
+
+            if (materials != null) {
+                ArrayList<Material> listMaterial = setSpinnerListMaterial(materials);
+
+                final ArrayAdapter<Material> adapterMaterial = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listMaterial);
+                adapterMaterial.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnMaterial.setAdapter(adapterMaterial);
+            }
+
+            if (reforms != null) {
+                ArrayList<Reform> listReforms = setSpinnerListReforms(reforms);
+
+                final ArrayAdapter<Reform> adapterReform = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, listReforms);
+                adapterReform.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnReform.setAdapter(adapterReform);
+            }
+
+            dialog.setPositiveButton(getString(R.string.btn_register), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Material material = (Material) spnMaterial.getSelectedItem();
+                    Reform reform = (Reform) spnReform.getSelectedItem();
+                    Daily daily = getDaily(material, reform, Integer.parseInt(edtQuantity.getText().toString()));
+                    insertDailyDatabase(daily);
+                }
+            });
+
+            dialog.setNegativeButton(getString(R.string.btn_cancel), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            }).create();
+            dialog.show();
+            }
+        });
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        if (reform_status) {
+            getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, reformFragment);
+        }else if(material_status) {
+            getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, materialFragment);
+        }else if (budget_status){
+            getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, budgetFragment);
+        } else {
+            getSupportFragmentManager().putFragment(outState, FRAGMENT_STATUS, aboutFragment);
         }
 
     }
@@ -225,6 +330,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        if (reformFragment != null && materialFragment == null && budgetFragment == null && aboutFragment == null) {
+            linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+            reformFragment = ReformFragment.newInstance();
+            reformFragment.setLayoutManager(linearLayoutManager);
+            getSupportFragmentManager().beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
+        }
     }
 
     @Override
@@ -233,7 +344,11 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if (reform_status){
+                exit();
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
@@ -260,20 +375,27 @@ public class MainActivity extends AppCompatActivity
         linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
         if (id == R.id.nav_reforms) {
+            booleanReform();
+            reformFragment = ReformFragment.newInstance();
             reformFragment.setLayoutManager(linearLayoutManager);
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, reformFragment).commit();
         } else if (id == R.id.nav_materials) {
-            MaterialFragment materialFragment = MaterialFragment.newInstance("");
+            booleanMaterial();
+            materialFragment = MaterialFragment.newInstance("");
             materialFragment.setLinearLayoutManager(linearLayoutManager);
             fragmentManager.beginTransaction().replace(R.id.frame_content_main, materialFragment).commit();
         } else if (id == R.id.nav_budget) {
-            fragmentManager.beginTransaction().replace(R.id.frame_content_main, BudgetFragment.newInstance("test")).commit();
-        } else if (id == R.id.nav_manage) {
-
+            booleanBudget();
+            budgetFragment = BudgetFragment.newInstance();
+            fragmentManager.beginTransaction().replace(R.id.frame_content_main, budgetFragment).commit();
+        } else if (id == R.id.nav_about) {
+            booleanAbout();
+            aboutFragment = AboutFragment.newInstance();
+            fragmentManager.beginTransaction().replace(R.id.frame_content_main, aboutFragment).commit();
         } else if (id == R.id.nav_logout) {
             signOut();
         } else if (id == R.id.nav_exit) {
-
+            exit();
         }
 
         drawer.closeDrawer(GravityCompat.START);
@@ -292,6 +414,10 @@ public class MainActivity extends AppCompatActivity
     public void onBudgetFragmentInteraction(Uri uri) {
     }
 
+    @Override
+    public void onAboutFragmentInteraction(Uri uri) {
+    }
+
     private void signOut(){
         LoginActivity.getGoogleSignInClient().signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
             @Override
@@ -301,18 +427,24 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private void exit(){
+        moveTaskToBack(true);
+        android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(1);
+    }
+
     private void closeFab(){
         isFabOpen = false;
         fab_reform.animate().translationY(0);
         fab_material.animate().translationY(0);
-        fab_budget.animate().translationY(0);
+        fab_daily.animate().translationY(0);
     }
 
     private void openFab(){
         isFabOpen = true;
-        fab_reform.animate().translationY(getResources().getDimension(R.dimen.fab_margin_reform));
-        fab_material.animate().translationY(getResources().getDimension(R.dimen.fab_margin_material));
-        fab_budget.animate().translationY(getResources().getDimension(R.dimen.fab_margin_budget));
+        fab_reform.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_reform));
+        fab_material.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_material));
+        fab_daily.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_budget));
     }
 
     public void insertReformDatabase(Reform reform){
@@ -324,13 +456,13 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Reform... reforms) {
             Reform reform = reforms[0];
-            ReformDatabase.reformDAO().insertReform(reform);
+            appDatabase.reformDAO().insertReform(reform);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Toast.makeText(getApplicationContext(), "Reform has been added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.reform_added), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -343,29 +475,140 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Material... materials) {
             Material material = materials[0];
-            materialDatabase.materialDAO().insertMaterial(material);
+            appDatabase.materialDAO().insertMaterial(material);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Toast.makeText(getApplicationContext(), "Material has been added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.material_added), Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void fillSpinner(){
-        units.add("Kg");
-        units.add("g");
-        units.add("mg");
+    public void insertDailyDatabase(Daily daily){
+        new InsertDailyDB().execute(daily);
     }
-//
-//    private void revokeAccess(){
-//        googleSignInClient.revokeAccess().addOnCompleteListener(this, new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                updateUIGoogle(null);
-//            }
-//        });
-//    }
+
+    public class InsertDailyDB extends AsyncTask<Daily, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Daily... dailies) {
+            Daily daily = dailies[0];
+            appDatabase.dailyDAO().insertDaily(daily);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Toast.makeText(getApplicationContext(), getString(R.string.daily_added), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void getUnitsFromDatabase(){
+        new GetUnits().execute();
+    }
+
+    public class GetUnits extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            fbaseViewModel = ViewModelProviders.of(MainActivity.this).get(FbaseViewModel.class);
+            fbaseViewModel.getUnits().observe(MainActivity.this, new Observer<List<String>>() {
+                @Override
+                public void onChanged(@Nullable List<String> strings) {
+                    final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, strings);
+                    adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+                    spn_unit.setAdapter(adapter);
+                }
+            });
+            return null;
+        }
+
+    }
+
+    public void setupMaterialViewModel(){
+        MaterialViewModel materialViewModel = ViewModelProviders.of(this).get(MaterialViewModel.class);
+        materialViewModel.getMaterials().observe(this, new Observer<Material[]>() {
+            @Override
+            public void onChanged(@Nullable Material[] materials) {
+                if (materials.length != 0)
+                    setMaterials(materials);
+            }
+        });
+    }
+
+    public void setupReformViewModel(){
+        ReformViewModel reformViewModel = ViewModelProviders.of(this).get(ReformViewModel.class);
+        reformViewModel.getReforms().observe(this, new Observer<Reform[]>() {
+            @Override
+            public void onChanged(@Nullable Reform[] reforms) {
+                if (reforms.length != 0){
+                    setReforms(reforms);
+                }
+            }
+        });
+    }
+
+    public ArrayList<Material> setSpinnerListMaterial(Material[] materials){
+        if (materials != null) {
+            ArrayList<Material> listMaterial = new ArrayList<>();
+            Collections.addAll(listMaterial, materials);
+            return listMaterial;
+        }
+        return null;
+    }
+
+    public ArrayList<Reform> setSpinnerListReforms(Reform[] reforms){
+        if (reforms != null) {
+            ArrayList<Reform> listReforms = new ArrayList<>();
+            Collections.addAll(listReforms, reforms);
+            return listReforms;
+        }
+        return null;
+    }
+
+    public void setMaterials(Material[] materials){
+        this.materials = materials;
+    }
+
+    public void setReforms(Reform[] reforms){
+        this.reforms = reforms;
+    }
+
+    public Daily getDaily(Material material, Reform reform, int quantity){
+        Daily daily = new Daily();
+        daily.setId_reform(reform.getId());
+        daily.setMaterial(material);
+        daily.setQuantity(quantity);
+        return daily;
+    }
+
+    public void booleanReform(){
+        reform_status = true;
+        material_status = false;
+        budget_status = false;
+        about_status = false;
+    }
+
+    public void booleanMaterial(){
+        reform_status = false;
+        material_status = true;
+        budget_status = false;
+        about_status = false;
+    }
+
+    public void booleanBudget(){
+        reform_status = false;
+        material_status = false;
+        budget_status = true;
+        about_status = false;
+    }
+
+    public void booleanAbout(){
+        reform_status = false;
+        material_status = false;
+        budget_status = false;
+        about_status = true;
+    }
 
 }

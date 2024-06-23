@@ -83,4 +83,8 @@ public class Reform implements Parcelable{
         parcel.writeString(total_spent);
     }
 
+    @Override
+    public String toString() {
+        return this.room;
+    }
 }

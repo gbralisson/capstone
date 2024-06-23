@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Capstone</string>
+    <string name="app_name">AG Daily</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -11,10 +11,15 @@
     <string name="nav_reform_name">Reforms</string>
     <string name="nav_material_name">Materials</string>
     <string name="nav_budget_name">Budget</string>
-    <string name="nav_tools_name">Tools</string>
+    <string name="nav_about_name">About</string>
     <string name="nav_group">Account</string>
     <string name="nav_logout_name">Logout</string>
     <string name="nav_exit_name">Exit</string>
+
+    <string name="txt_reform_room">Room</string>
+    <string name="txt_reform_days">Days</string>
+    <string name="txt_reform_budget">Budget</string>
+    <string name="txt_reform_spent">Spent</string>
 
     <string name="server_client_ID">959951927212-h00d88o7ronspq7aqk6orn3mfffdn5s6.apps.googleusercontent.com</string>
     <string name="server_oauth_client">959951927212-upsbla6b2i8ghiv9vjmoasakp784loo9.apps.googleusercontent.com</string>
@@ -23,4 +28,6 @@
     <string name="txt_reform_detail_spent">Total Spent</string>
     <string name="txt_daily_name">Daily</string>
     <string name="txt_AGDaily">AG Daily</string>
+
+    <string name="no_reform">No Reform registered</string>
 </resources>

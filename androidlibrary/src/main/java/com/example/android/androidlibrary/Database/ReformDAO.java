@@ -9,6 +9,9 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
 import com.example.android.androidlibrary.Model.Reform;
+import com.example.android.androidlibrary.Model.ReformAllDailies;
+
+import java.util.List;
 
 @Dao
 public interface ReformDAO {
@@ -18,6 +21,12 @@ public interface ReformDAO {
 
     @Query("SELECT * FROM reform WHERE id = :id")
     LiveData<Reform> loadReform(int id);
+
+    @Query("SELECT * FROM reform WHERE id = :id_reform")
+    LiveData<ReformAllDailies> loadReformAllDailies(int id_reform);
+
+    @Query("SELECT * FROM reform ORDER BY id")
+    LiveData<List<ReformAllDailies>> loadAllReformAllDailies();
 
     @Insert
     void insertReform(Reform reform);

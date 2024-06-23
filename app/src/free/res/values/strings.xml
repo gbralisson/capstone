@@ -1,6 +1,8 @@
 <resources>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_Reform_blank_fragment">Hello Reform blank fragment</string>
+    <string name="ad_app_id">ca-app-pub-7827042119971131~9807267792</string>
+    <string name="banner_ad_unit_id">ca-app-pub-7827042119971131/4835262274</string>
+    <string name="banner_ad_unit_id_test">ca-app-pub-3940256099942544/6300978111</string>
 
 </resources>

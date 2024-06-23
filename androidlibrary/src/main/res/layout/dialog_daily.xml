@@ -1,32 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <Spinner
-        android:id="@+id/spn_material"
-        android:layout_width="139dp"
-        android:layout_height="34dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
 
-    <EditText
-        android:id="@+id/edt_quantity"
-        android:layout_width="122dp"
-        android:layout_height="42dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:ems="10"
-        android:hint="Quantity"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.818"
-        app:layout_constraintStart_toEndOf="@+id/spn_material"
-        app:layout_constraintTop_toTopOf="parent" />
-</android.support.constraint.ConstraintLayout>
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:text="@string/txt_choose_room"
+            android:textSize="20sp" />
+
+        <Spinner
+            android:id="@+id/spn_reform"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:layout_weight="3"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <Spinner
+            android:id="@+id/spn_material"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:padding="2dp"
+            android:layout_weight="2"/>
+
+        <EditText
+            android:id="@+id/edt_quantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/txt_quantity"
+            android:inputType="number"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+
+</LinearLayout>

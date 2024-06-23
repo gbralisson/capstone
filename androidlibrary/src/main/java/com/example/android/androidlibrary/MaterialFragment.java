@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.android.androidlibrary.Adapter.MaterialAdapter;
 import com.example.android.androidlibrary.Model.Material;
@@ -26,6 +27,7 @@ public class MaterialFragment extends Fragment implements MaterialAdapter.Materi
     private String mParam1;
 
     private RecyclerView recyclerView;
+    private TextView txt_noMaterial;
     private RecyclerView.LayoutManager linearLayoutManager;
     private MaterialAdapter materialAdapter;
 
@@ -57,6 +59,8 @@ public class MaterialFragment extends Fragment implements MaterialAdapter.Materi
         View view = inflater.inflate(R.layout.fragment_material, container, false);
 
         recyclerView = view.findViewById(R.id.rv_materials_list);
+        txt_noMaterial = view.findViewById(R.id.txt_noMaterial);
+
         recyclerView.setLayoutManager(linearLayoutManager);
 
         materialAdapter = new MaterialAdapter(this);
@@ -101,10 +105,12 @@ public class MaterialFragment extends Fragment implements MaterialAdapter.Materi
         materialViewModel.getMaterials().observe(this, new Observer<Material[]>() {
             @Override
             public void onChanged(@Nullable Material[] materials) {
-            if (materials.length == 0)
-                Log.d("teste", "No material");
-            else
-                materialAdapter.setMaterials(materials);
+                if (materials.length == 0)
+                    txt_noMaterial.setVisibility(View.VISIBLE);
+                else {
+                    txt_noMaterial.setVisibility(View.GONE);
+                    materialAdapter.setMaterials(materials);
+                }
             }
         });
     }
